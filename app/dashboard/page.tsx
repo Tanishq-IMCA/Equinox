@@ -63,6 +63,24 @@ function ClusterPanel({ cluster, telemetry, onTerminate }: { cluster: number; te
   </div>;
 }
 
+function formatClusterTelemetry(totals: {
+  cpu: number;
+  gpu: number;
+  ram: number;
+  gpuMemory: number;
+  power: number;
+  temperature: number;
+}) {
+  return {
+    cpu: `${totals.cpu.toFixed(1)} / 1000%`,
+    gpu: `${totals.gpu.toFixed(1)} / 1000%`,
+    ram: `${(totals.ram * 1.2).toFixed(1)} / 1200 GB`,
+    gpuMemory: `${(totals.gpuMemory * 0.6).toFixed(1)} / 600 GB`,
+    power: `${(totals.power * 0.192).toFixed(2)} / 192 kW`,
+    temperature: `${totals.temperature.toFixed(1)} / 100°C`,
+  };
+}
+
 export default function Dashboard() {
   const router = useRouter();
   const [panel, setPanel] = useState(true);
@@ -83,13 +101,7 @@ export default function Dashboard() {
     power: selectedClusterNodes.reduce((sum, node) => sum + node.power, 0),
     temperature: selectedClusterNodes.length ? Math.max(...selectedClusterNodes.map((node) => node.temperature)) : 0,
   };
-  const clusterOverview: NodeTelemetry = {
-    id: selectedClusterNodes[0]?.id ?? 1,
-    cluster: selectedCluster,
-    state: "cluster",
-    ...clusterTotals,
-    tasks: selectedClusterNodes.flatMap((node) => node.tasks),
-  };
+  const clusterDisplay = formatClusterTelemetry(clusterTotals);
 
   useEffect(() => {
     if (localStorage.getItem("equinox-auth") !== "active") router.replace("/login");
@@ -455,18 +467,18 @@ export default function Dashboard() {
          <div className="cluster-overview-card glass">
            <div className="cluster-overview-head"><div><span className="telemetry-panel-kicker">CLUSTER {String(selectedCluster + 1).padStart(2, "0")} / COMBINED TELEMETRY</span><h2>CLUSTER STATUS</h2></div><button className="emergency-button" onClick={() => { setShutdownNotice(`Emergency shutdown armed for Cluster ${String(selectedCluster + 1).padStart(2, "0")}. Tasks will be drained before power down.`); }}>EMERGENCY SHUTDOWN</button></div>
            <div className="cluster-overview-metrics">
-             <MetricBar label={`CPU ${clusterTotals.cpu.toFixed(1)} / 1000%`} value={clusterTotals.cpu / 10} unit="" />
-             <MetricBar label={`GPU ${clusterTotals.gpu.toFixed(1)} / 1000%`} value={clusterTotals.gpu / 10} unit="" />
-             <MetricBar label={`RAM ${(clusterTotals.ram * 1.2).toFixed(1)} / 1200 GB`} value={clusterTotals.ram / 10} unit="" />
-             <MetricBar label={`VRAM ${(clusterTotals.gpuMemory * 0.6).toFixed(1)} / 600 GB`} value={clusterTotals.gpuMemory / 10} unit="" />
-             <MetricBar label={`POWER ${(clusterTotals.power * 0.192).toFixed(2)} / 192 kW`} value={clusterTotals.power / 10} unit="" />
-             <MetricBar label={`PEAK TEMP ${clusterTotals.temperature.toFixed(1)} / 100°C`} value={clusterTotals.temperature} unit="" />
+              <MetricBar label="CPU" value={clusterTotals.cpu / 10} valueText={clusterDisplay.cpu} />
+              <MetricBar label="GPU" value={clusterTotals.gpu / 10} valueText={clusterDisplay.gpu} />
+              <MetricBar label="RAM" value={clusterTotals.ram / 10} valueText={clusterDisplay.ram} />
+              <MetricBar label="VRAM" value={clusterTotals.gpuMemory / 10} valueText={clusterDisplay.gpuMemory} />
+              <MetricBar label="POWER" value={clusterTotals.power / 10} valueText={clusterDisplay.power} />
+              <MetricBar label="PEAK TEMP" value={clusterTotals.temperature} valueText={clusterDisplay.temperature} />
            </div>
            {shutdownNotice && <p className="shutdown-notice">{shutdownNotice}</p>}
          </div>
          {notice && <div className="telemetry-notice" role="status">{notice}</div>}
       </div>}
-       {visiblePage === "Live Workflow" && <div className="workflow-page"><div className="dashboard-intro"><p className="eyebrow">WORKSPACE / 02</p><h1>LIVE <span className="accent">WORKFLOW.</span></h1><p>Detailed cluster telemetry and task operations across the six isolated server domains.</p></div><div className="workflow-cluster-tabs">{Array.from({ length: 6 }, (_, cluster) => <button key={cluster} className={selectedCluster === cluster ? "active" : ""} onClick={() => setSelectedCluster(cluster)}>CLUSTER {String(cluster + 1).padStart(2, "0")}<small>{clusterNodeIds(cluster).join(" · ")}</small></button>)}</div><ClusterPanel cluster={selectedCluster} telemetry={telemetry} onTerminate={terminateTask} /><div className="workflow-node-grid">{selectedClusterNodes.map((node) => <TelemetryPanel key={node.id} telemetry={node} onTerminate={terminateTask} />)}</div></div>}
+        {visiblePage === "Live Workflow" && <div className="workflow-page"><div className="dashboard-intro"><p className="eyebrow">WORKSPACE / 02</p><h1>LIVE <span className="accent">WORKFLOW.</span></h1><p>Detailed cluster telemetry and task operations across the six isolated server domains.</p></div><div className="workflow-cluster-tabs">{Array.from({ length: 6 }, (_, cluster) => <button key={cluster} className={selectedCluster === cluster ? "active" : ""} onClick={() => setSelectedCluster(cluster)}>CLUSTER {String(cluster + 1).padStart(2, "0")}<small>{clusterNodeIds(cluster).join(" · ")}</small></button>)}</div><div className="workflow-section-label">DETAILED TASK OPERATIONS / SELECTED CLUSTER</div><ClusterPanel cluster={selectedCluster} telemetry={telemetry} onTerminate={terminateTask} /><div className="workflow-section-label">NODE-LEVEL TELEMETRY / CURRENT VALUES OUT OF CAPACITY</div><div className="workflow-node-grid">{selectedClusterNodes.map((node) => <TelemetryPanel key={node.id} telemetry={node} onTerminate={terminateTask} />)}</div></div>}
        {visiblePage === "Logs" && <div className="logs-page"><p className="eyebrow">WORKSPACE / 03</p><h1>SYSTEM<br /><span className="accent">LOGS.</span></h1><div className="logs-panel glass">{logs.map((log, index) => <div className="log-row" key={`${log.time}-${index}`}><time>{log.time}</time><b>{log.kind}</b><span>{log.message}</span></div>)}</div></div>}
     </section>
   </main>;
