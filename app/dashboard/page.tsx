@@ -92,7 +92,7 @@ export default function Dashboard() {
   const [selectedCluster, setSelectedCluster] = useState(5);
   const [shutdownNotice, setShutdownNotice] = useState("");
   const sceneHost = useRef<HTMLDivElement>(null);
-  const { telemetry, logs, notice, terminateTask, powerCluster } = useSimulation();
+  const { telemetry, logs, notice, terminateTask, powerCluster, autonomous, setAutonomousMode } = useSimulation();
   const telemetryRef = useRef(telemetry);
   telemetryRef.current = telemetry;
   const selectedClusterNodes = telemetry.filter((node) => node.cluster === selectedCluster);
@@ -225,7 +225,7 @@ export default function Dashboard() {
       if (visual.state === state) return;
       visual.state = state;
       visual.rack.traverse((object) => {
-        if (object instanceof THREE.Light) object.visible = state !== "offline";
+        if (object instanceof THREE.Light) object.visible = state !== "offline" && state !== "starting";
         if (!(object instanceof THREE.Mesh)) return;
         const material = Array.isArray(object.material) ? object.material[0] : object.material;
         const baseColor = object.userData.baseColor as THREE.Color | undefined;
@@ -498,14 +498,14 @@ export default function Dashboard() {
           const clusterNodes = telemetryRef.current.filter((node) => node.cluster === cluster);
           const activeRatio = cluster === null
             ? 1
-            : clusterNodes.filter((node) => node.state !== "offline" && node.state !== "stopping").length / Math.max(clusterNodes.length, 1);
+            : clusterNodes.filter((node) => ["online", "ready", "warning"].includes(node.state)).length / Math.max(clusterNodes.length, 1);
           (line.material as THREE.MeshBasicMaterial).opacity = 0.92 * activeRatio;
           line.visible = activeRatio > 0;
         });
       controls.update();
       powerPulses.forEach(({ mesh, curve, offset, cluster }) => {
         const clusterNodes = cluster === null ? [] : telemetryRef.current.filter((node) => node.cluster === cluster);
-        const active = cluster === null || clusterNodes.some((node) => node.state !== "offline" && node.state !== "stopping");
+        const active = cluster === null || clusterNodes.some((node) => ["online", "ready", "warning"].includes(node.state));
         mesh.visible = active;
         const t = ((performance.now() * 0.00028 + offset) % 1);
         mesh.position.copy(curve.getPointAt(t));
@@ -554,7 +554,7 @@ export default function Dashboard() {
     <section className={`dashboard-content ${switching ? "is-switching" : ""}`}>
       {visiblePage === "Overview" && <div className="overview-page">
         <div className="dashboard-intro"><p className="eyebrow">AUTONOMOUS ENERGY SYSTEMS / 02</p><h1>CLUSTER <span className="accent">OVERVIEW.</span></h1><p>Thirty nodes. One adaptive system. Watch workload migration, thermal awareness, and power efficiency in real time.</p></div>
-         <div className="overview-tools"><span className="room-status"><i /> ROOM A / 60 NODES</span><span>HOVER A RACK FOR TELEMETRY</span><span>DRAG TO ROTATE</span><span>SCROLL TO ZOOM</span></div>
+          <div className="overview-tools"><span className="room-status"><i /> ROOM A / 60 NODES</span><span>HOVER A RACK FOR TELEMETRY</span><span>DRAG TO ROTATE</span><span>SCROLL TO ZOOM</span><button className={`autonomous-toggle ${autonomous ? "active" : ""}`} onClick={() => setAutonomousMode(!autonomous)}>AUTONOMOUS: {autonomous ? "ON" : "OFF"}</button></div>
         <div className="rack-window glass">
           <div className="window-top"><span className="dot red" /><span className="dot yellow" /><span className="dot green" /><span className="window-label">LIVE NODE TELEMETRY / STANDBY</span></div>
            <div className="room-viewport"><div className="rack-canvas-host" ref={sceneHost} />{hoveredTelemetry && <div className="hover-telemetry" onPointerDown={(event) => event.stopPropagation()}><TelemetryPanel telemetry={hoveredTelemetry} onTerminate={terminateTask} compact /></div>}</div>

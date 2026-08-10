@@ -49,7 +49,13 @@ const fallbackTasks: TaskTemplate[] = [
   { id: "WEB-001", category: "General tasks", name: "Microsoft Edge worker", intensity: "Low", cpu: 4, ram: 800, gpu: 4, gpuMemory: 400, power: 19, temperature: 41 },
 ];
 
-type RuntimeNode = { id: number; tasks: LiveTask[]; offline: boolean; powerAction?: "starting" | "stopping" };
+type RuntimeNode = {
+  id: number;
+  tasks: LiveTask[];
+  offline: boolean;
+  temperature: number;
+  powerAction?: "starting" | "stopping";
+};
 
 const clamp = (value: number, min = 0, max = 100) => Math.min(max, Math.max(min, value));
 const average = (items: number[]) => items.length ? items.reduce((sum, value) => sum + value, 0) / items.length : 0;
@@ -63,8 +69,21 @@ function metrics(node: RuntimeNode): Omit<NodeTelemetry, "id" | "cluster" | "sta
   const gpu = tasks.reduce((sum, task) => sum + task.gpu, 0);
   const gpuMemory = tasks.reduce((sum, task) => sum + task.gpuMemory, 0) / 600;
   const power = tasks.reduce((sum, task) => sum + task.power, 0) / 192;
-  const temperature = clamp(27 + average(tasks.map((task) => task.temperature)) + tasks.length * 0.8, 27, 99);
+  const temperature = node.temperature;
   return { cpu: clamp(cpu), ram: clamp(ram), gpu: clamp(gpu), gpuMemory: clamp(gpuMemory), power: clamp(power), temperature, };
+}
+
+function thermalBand(task: TaskTemplate) {
+  if (task.temperature >= 68) return "high";
+  if (task.temperature <= 48) return "low";
+  return "medium";
+}
+
+function temperatureTarget(node: RuntimeNode) {
+  if (node.offline || node.powerAction === "stopping") return 0;
+  if (!node.tasks.length) return 30;
+  const taskHeat = average(node.tasks.map((task) => task.temperature));
+  return clamp(24 + taskHeat * 0.58 + Math.min(node.tasks.length, 6) * 0.8, 28, 92);
 }
 
 export function formatTelemetry(telemetry: NodeTelemetry) {
@@ -93,14 +112,11 @@ function makeTask(template: TaskTemplate, sequence: number): LiveTask {
 
 function pickTemplate(catalog: TaskTemplate[]) {
   const source = catalog.length ? catalog : fallbackTasks;
-  const weights = source.map((task) => /Machine learning|LLM|Gaming/i.test(task.category) ? 1 : 2);
-  const total = weights.reduce((sum, weight) => sum + weight, 0);
-  let cursor = Math.random() * total;
-  for (let index = 0; index < source.length; index += 1) {
-    cursor -= weights[index];
-    if (cursor <= 0) return source[index];
-  }
-  return source[0];
+  const roll = Math.random();
+  const desiredBand = roll < 0.1 ? "low" : roll < 0.7 ? "medium" : "high";
+  const matching = source.filter((task) => thermalBand(task) === desiredBand);
+  if (matching.length) return matching[Math.floor(Math.random() * matching.length)];
+  return source[Math.floor(Math.random() * source.length)];
 }
 
 export function clusterForNode(id: number) {
@@ -116,11 +132,16 @@ export function useSimulation() {
     id: index + 1,
     tasks: [],
     offline: initiallyOffline.has(index + 1),
+    temperature: initiallyOffline.has(index + 1) ? 0 : 30,
   })));
   const catalog = useRef<TaskTemplate[]>([]);
   const sequence = useRef(0);
   const powerTimers = useRef<number[]>([]);
+  const pendingAutonomousTasks = useRef<TaskTemplate[]>([]);
+  const autonomousCursor = useRef(0);
+  const autonomousRef = useRef(false);
   const [, redraw] = useState(0);
+  const [autonomous, setAutonomous] = useState(false);
   const [logs, setLogs] = useState<SimulationLog[]>([{ time: nowLabel(), kind: "ENGINE", message: "Telemetry engine initialized across six isolated clusters." }]);
   const [notice, setNotice] = useState("");
 
@@ -140,7 +161,14 @@ export function useSimulation() {
       const current = Date.now();
       const intakeDue = current - lastIntakeAt >= 10000;
       runtime.current.forEach((node) => {
-        if (node.offline) return;
+        const target = temperatureTarget(node);
+        const rate = target === 0 ? 0.16 : 0.09;
+        node.temperature += (target - node.temperature) * rate;
+        if (Math.abs(target - node.temperature) < 0.15) node.temperature = target;
+        if (node.offline && !node.powerAction) {
+          return;
+        }
+        if (node.powerAction === "starting") return;
         node.tasks = node.tasks.flatMap((task) => {
           if (task.state === "terminating" && task.endsAt && current >= task.endsAt) {
             addLog("POWER", `Task ${task.name} terminated on node ${node.id}.`);
@@ -153,7 +181,7 @@ export function useSimulation() {
           if (task.state === "running") return [{ ...task, remaining: task.remaining - 1 }];
           return [task];
         });
-        if (intakeDue && node.tasks.length < 18) {
+        if (!autonomousRef.current && intakeDue && node.tasks.length < 18) {
           const template = pickTemplate(catalog.current);
           if (canAccept(node, template)) {
             node.tasks.push(makeTask(template, sequence.current++));
@@ -161,6 +189,10 @@ export function useSimulation() {
           }
         }
       });
+      if (autonomousRef.current && intakeDue) {
+        pendingAutonomousTasks.current.push(pickTemplate(catalog.current));
+        dispatchAutonomousWork();
+      }
       if (intakeDue) lastIntakeAt = current;
       redraw((value) => value + 1);
     }, 1000);
@@ -214,6 +246,7 @@ export function useSimulation() {
       const timer = window.setTimeout(() => {
         if (shouldStart) {
           node.offline = false;
+          node.temperature = Math.max(node.temperature, 0);
           node.powerAction = undefined;
           addLog("POWER", `Node ${node.id} started in Cluster ${String(cluster + 1).padStart(2, "0")}.`);
         } else {
@@ -234,5 +267,61 @@ export function useSimulation() {
     window.setTimeout(() => setNotice(""), 5200);
   }
 
-  return { telemetry, logs, notice, terminateTask, powerCluster };
+  function dispatchAutonomousWork() {
+    while (pendingAutonomousTasks.current.length) {
+      const task = pendingAutonomousTasks.current[0];
+      const target = runtime.current.find((node) => !node.offline && !node.powerAction && canAccept(node, task));
+      if (target) {
+        target.tasks.push(makeTask(task, sequence.current++));
+        pendingAutonomousTasks.current.shift();
+        addLog("AUTONOMOUS", `Assigned ${task.name} to node ${target.id}.`);
+        continue;
+      }
+      const nextNode = runtime.current
+        .filter((node) => node.offline && !node.powerAction)
+        .sort((a, b) => a.id - b.id)[autonomousCursor.current++];
+      if (!nextNode) return;
+      nextNode.powerAction = "starting";
+      window.setTimeout(() => {
+        nextNode.offline = false;
+        nextNode.powerAction = undefined;
+        nextNode.temperature = Math.max(nextNode.temperature, 0);
+        addLog("AUTONOMOUS", `Activated node ${nextNode.id} for queued work.`);
+        dispatchAutonomousWork();
+        redraw((value) => value + 1);
+      }, 500);
+      return;
+    }
+  }
+
+  function setAutonomousMode(enabled: boolean) {
+    if (enabled === autonomousRef.current) return;
+    autonomousRef.current = enabled;
+    setAutonomous(enabled);
+    pendingAutonomousTasks.current = [];
+    autonomousCursor.current = 0;
+    if (!enabled) {
+      addLog("AUTONOMOUS", "Autonomous capacity control disabled.");
+    return;
+    }
+    runtime.current.forEach((node, index) => {
+      node.tasks = [];
+      if (node.offline) {
+        node.temperature = 0;
+        return;
+      }
+      node.powerAction = "stopping";
+      window.setTimeout(() => {
+        node.offline = true;
+        node.powerAction = undefined;
+        redraw((value) => value + 1);
+      }, index * 500);
+    });
+    addLog("AUTONOMOUS", "Autonomous mode engaged. Draining all nodes before demand-based activation.");
+    setNotice("AUTONOMOUS MODE: all nodes powering down; capacity will follow demand.");
+    window.setTimeout(() => setNotice(""), 5200);
+    redraw((value) => value + 1);
+  }
+
+  return { telemetry, logs, notice, terminateTask, powerCluster, autonomous, setAutonomousMode };
 }
