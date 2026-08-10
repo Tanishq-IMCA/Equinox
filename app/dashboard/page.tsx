@@ -148,14 +148,14 @@ export default function Dashboard() {
       };
       for (let index = 0; index < nodes.length; index += 1) {
         const rack = source.clone(true);
-        const column = index % 10;
-        const row = Math.floor(index / 10);
+        const column = index % 6;
+        const row = Math.floor(index / 6);
         rack.scale.setScalar(scale);
         const node = nodes[index];
         rack.position.set(
-          ((column - 4.5) * (rackWidth + columnGap) + (column >= 5 ? 0.7 : -0.7)) - center.x * scale,
+          (column - 2.5) * (rackWidth + columnGap) - center.x * scale,
           -bounds.min.y * scale,
-          (row - 2.5) * (rackDepth + rowGap) - center.z * scale
+          ((row - 4.5) * (rackDepth + rowGap) + (row >= 3 ? 0.7 : -0.7)) - center.z * scale
         );
         rack.traverse((object) => {
           if (object instanceof THREE.Mesh) {
