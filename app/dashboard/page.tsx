@@ -6,7 +6,7 @@ import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 
-const nodes = Array.from({ length: 30 }, (_, i) => ({
+const nodes = Array.from({ length: 78 }, (_, i) => ({
   id: i + 1,
   state: [8, 21, 27].includes(i + 1) ? "offline" : i === 7 || i === 18 ? "warning" : i % 4 === 0 ? "ready" : "online",
 }));
@@ -42,7 +42,7 @@ export default function Dashboard() {
     scene.background = new THREE.Color("#11161b");
 
     const camera = new THREE.PerspectiveCamera(38, 1, 0.1, 100);
-    camera.position.set(17, 12, 19);
+    camera.position.set(29, 17, 32);
     camera.lookAt(0, 0.8, 0);
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
@@ -60,8 +60,8 @@ export default function Dashboard() {
     controls.enablePan = false;
     controls.enableDamping = true;
     controls.dampingFactor = 0.08;
-    controls.minDistance = 10;
-    controls.maxDistance = 30;
+    controls.minDistance = 16;
+    controls.maxDistance = 52;
     controls.minPolarAngle = 0.32;
     controls.maxPolarAngle = Math.PI / 2 - 0.06;
     controls.update();
@@ -77,13 +77,13 @@ export default function Dashboard() {
     scene.add(rimLight);
 
     const floor = new THREE.Mesh(
-      new THREE.PlaneGeometry(17, 18),
+      new THREE.PlaneGeometry(31, 18),
       new THREE.MeshStandardMaterial({ color: "#252b30", roughness: 0.86, metalness: 0.12 })
     );
     floor.rotation.x = -Math.PI / 2;
     floor.receiveShadow = true;
     scene.add(floor);
-    const grid = new THREE.GridHelper(17, 34, "#566067", "#40484e");
+    const grid = new THREE.GridHelper(31, 62, "#566067", "#40484e");
     grid.position.y = 0.012;
     grid.material.transparent = true;
     grid.material.opacity = 0.42;
@@ -102,6 +102,7 @@ export default function Dashboard() {
       const rackWidth = size.x * scale;
       const rackDepth = size.z * scale;
       const columnGap = 0.85;
+      const rowGap = 0.12;
       const statusColors: Record<string, string> = {
         online: "#42f59b",
         ready: "#ffd34f",
@@ -145,16 +146,16 @@ export default function Dashboard() {
         label.rotation.x = -Math.PI / 2;
         return label;
       };
-      for (let index = 0; index < 30; index += 1) {
+      for (let index = 0; index < nodes.length; index += 1) {
         const rack = source.clone(true);
-        const column = index % 5;
-        const row = Math.floor(index / 5);
+        const column = index % 13;
+        const row = Math.floor(index / 13);
         rack.scale.setScalar(scale);
         const node = nodes[index];
         rack.position.set(
-          (column - 2) * (rackWidth + columnGap) - center.x * scale,
+          (column - 6) * (rackWidth + columnGap) - center.x * scale,
           -bounds.min.y * scale,
-          (row - 2.5) * rackDepth - center.z * scale
+          (row - 2.5) * (rackDepth + rowGap) - center.z * scale
         );
         rack.traverse((object) => {
           if (object instanceof THREE.Mesh) {
