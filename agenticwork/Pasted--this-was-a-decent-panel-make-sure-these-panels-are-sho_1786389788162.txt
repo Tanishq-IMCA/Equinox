@@ -1,0 +1,42 @@
+
+this was a decent panel.
+make sure these panels are shown for each rack on mouse hover, with their live telemetry of CPU, GPU, RAM, TEMP, POWER.
+
+js lower the font size of control panel and it wont really say control panel but rather say sum else thats appropriate. telemetry panel?
+
+but in small font? so we have  more space to show telemetry data?
+
+make the bars, numbers n all small enough that they all fit the telemetry int hat panel.
+
+make the bar go red or yellow when it goes halfway (yellow) or near 80% and above. (red)
+
+while green is till 50% after which it goes to yellow
+
+btw the colour changes fade transition, seamless...
+
+at the bottom it should show processes..
+
+now make these things all in like one thing so when we do further work we can js link these things in one go and it will show everywhere properly in all pages.
+
+
+also add a terminate button, terminating should take some time anywhere between 3-6 seconds randomly selected and should give a warning in popup right there non intrusive if the tasks cannot be transferred to another server if the servers arent available to take any more tasks.
+
+now in the history u can see the txt file of how the software is supposed to work.
+
+an engine that feeds and generates live data in servers.
+
+then a logic system which manages the whole task management as described in the history.txt
+
+now while these panels appear on hover they can be found in a panel of their own. (a glass panel which has all the server from that column for example 6,12,18,24,30,36,42,48,54,60 all in one panel...) with their cluster named as 1 2 3 4 5 6 as we have 6 rows columns whatever it is.
+
+but u get it.
+
+we still havent made the logic but claude has made something for us. a script that made the library we asked it to make of tasks consisting of 400 tasks.
+
+with 8 categories having 50 tasks of their categories each ranging from low - mid - high
+
+ive uploaded the script it made us and the pkl and the csv file it made us in angentic work folder here.
+
+make a roadmap of stuff we needa do in roadmap.md
+follow the same layout from readme.md
+same warnings, title, badges, etc etc.

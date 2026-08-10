@@ -1,0 +1,401 @@
+Task_ID,Category,Task_Name,Intensity_Tier,CPU_Usage_Range,RAM_Usage_Range,GPU_Usage_Range,GPU_Memory_Range,Power_Usage_Range,Temperature_Range
+OS-001,Operating System,System Idle Process,Low,1.1-2.8%,224-601 MB,0%,0 MB,13-22 W,36-40 °C
+OS-002,Operating System,System,Negligible,0.2-0.5%,11-31 MB,0%,0 MB,3-4 W,31-35 °C
+OS-003,Operating System,Registry,Low,1.0-4.1%,487-736 MB,0%,0 MB,7-17 W,38-41 °C
+OS-004,Operating System,smss.exe,Negligible,0.6-0.9%,54-90 MB,0%,0 MB,2-4 W,32-36 °C
+OS-005,Operating System,csrss.exe (Session 0),Low,3.6-6.8%,420-787 MB,0%,0 MB,6-10 W,38-40 °C
+OS-006,Operating System,csrss.exe (Session 1),Negligible,0.2-0.4%,44-69 MB,0%,0 MB,2-3 W,32-36 °C
+OS-007,Operating System,wininit.exe,Low,3.6-5.0%,504-696 MB,0%,0 MB,10-19 W,41-46 °C
+OS-008,Operating System,services.exe,Low,4.5-7.5%,227-376 MB,0%,0 MB,9-14 W,37-44 °C
+OS-009,Operating System,lsass.exe,Low,2.3-5.0%,319-754 MB,0%,0 MB,11-15 W,37-42 °C
+OS-010,Operating System,winlogon.exe,Negligible,0.4-0.8%,32-52 MB,0%,0 MB,3-5 W,31-32 °C
+OS-011,Operating System,svchost.exe (DcomLaunch),Negligible,0.4-0.8%,33-48 MB,0%,0 MB,2-4 W,33-38 °C
+OS-012,Operating System,svchost.exe (RpcSs),Low,1.0-3.9%,478-790 MB,0%,0 MB,8-16 W,36-41 °C
+OS-013,Operating System,svchost.exe (RpcEptMapper),Low,5.0-8.0%,246-547 MB,0%,0 MB,7-17 W,43-47 °C
+OS-014,Operating System,svchost.exe (Schedule),Low,3.6-5.0%,523-836 MB,0%,0 MB,14-21 W,35-39 °C
+OS-015,Operating System,svchost.exe (EventLog),Negligible,0.6-1.0%,55-78 MB,0%,0 MB,1-3 W,36-37 °C
+OS-016,Operating System,svchost.exe (LanmanServer),Low,1.3-4.2%,525-705 MB,0%,0 MB,11-18 W,37-44 °C
+OS-017,Operating System,svchost.exe (LanmanWorkstation),Low,1.9-4.3%,505-708 MB,0%,0 MB,9-19 W,41-45 °C
+OS-018,Operating System,svchost.exe (Dnscache),Low,1.5-3.1%,287-616 MB,0%,0 MB,8-12 W,36-41 °C
+OS-019,Operating System,svchost.exe (NcbService),Negligible,0.6-1.0%,14-35 MB,0%,0 MB,3-4 W,31-36 °C
+OS-020,Operating System,svchost.exe (Power),Low,3.0-6.0%,548-748 MB,0%,0 MB,6-12 W,39-44 °C
+OS-021,Operating System,svchost.exe (ProfSvc),Low,3.8-7.3%,155-423 MB,0%,0 MB,9-18 W,37-40 °C
+OS-022,Operating System,svchost.exe (Themes),Low,2.8-4.5%,238-676 MB,0%,0 MB,10-19 W,40-42 °C
+OS-023,Operating System,svchost.exe (SysMain),Low,4.5-7.9%,0.6-1.0 GB,0%,0 MB,7-13 W,37-41 °C
+OS-024,Operating System,svchost.exe (Netman),Negligible,0.3-0.8%,24-63 MB,0%,0 MB,2-3 W,36-40 °C
+OS-025,Operating System,svchost.exe (nsi),Low,4.0-5.4%,264-716 MB,0%,0 MB,12-19 W,42-44 °C
+OS-026,Operating System,svchost.exe (TimeBrokerSvc),Low,3.1-6.3%,187-637 MB,0%,0 MB,6-10 W,40-46 °C
+OS-027,Operating System,svchost.exe (UserManager),Negligible,0.2-0.6%,23-56 MB,0%,0 MB,2-4 W,34-37 °C
+OS-028,Operating System,dwm.exe,Low,1.9-4.7%,232-499 MB,0%,0 MB,13-18 W,38-44 °C
+OS-029,Operating System,explorer.exe,Negligible,0.3-0.8%,64-80 MB,0%,0 MB,2-3 W,36-40 °C
+OS-030,Operating System,taskhostw.exe,Low,2.6-4.0%,562-928 MB,0%,0 MB,12-22 W,41-43 °C
+OS-031,Operating System,taskeng.exe,Low,2.3-4.9%,621-803 MB,0%,0 MB,6-10 W,40-44 °C
+OS-032,Operating System,RuntimeBroker.exe,Low,4.0-5.6%,452-676 MB,0%,0 MB,11-20 W,43-45 °C
+OS-033,Operating System,dllhost.exe (COM Surrogate),Low,2.2-3.2%,528-872 MB,0%,0 MB,8-16 W,40-44 °C
+OS-034,Operating System,conhost.exe,Negligible,0.1-0.6%,59-89 MB,0%,0 MB,3-4 W,31-33 °C
+OS-035,Operating System,WmiPrvSE.exe,Low,4.8-7.8%,577-1006 MB,0%,0 MB,8-12 W,36-42 °C
+OS-036,Operating System,spoolsv.exe,Low,2.7-5.3%,186-625 MB,0%,0 MB,15-25 W,42-49 °C
+OS-037,Operating System,LogonUI.exe,Negligible,0.5-0.7%,60-99 MB,0%,0 MB,3-5 W,32-36 °C
+OS-038,Operating System,fontdrvhost.exe,Negligible,0.6-1.0%,22-61 MB,0%,0 MB,2-3 W,35-37 °C
+OS-039,Operating System,sihost.exe,Negligible,0.2-0.4%,57-100 MB,0%,0 MB,2-3 W,32-37 °C
+OS-040,Operating System,ctfmon.exe,Low,4.9-6.3%,638-834 MB,0%,0 MB,17-21 W,36-41 °C
+OS-041,Operating System,msdtc.exe,Low,2.3-4.9%,384-647 MB,0%,0 MB,12-17 W,41-44 °C
+OS-042,Operating System,vssvc.exe,Low,3.3-6.1%,511-867 MB,0%,0 MB,9-13 W,41-45 °C
+OS-043,Operating System,TrustedInstaller.exe,Low,4.6-7.4%,266-505 MB,0%,0 MB,10-16 W,38-41 °C
+OS-044,Operating System,dfsrs.exe,Low,4.9-7.7%,601-938 MB,0%,0 MB,9-15 W,35-39 °C
+OS-045,Operating System,Ntfrs.exe,Low,3.4-6.1%,358-639 MB,0%,0 MB,8-14 W,43-50 °C
+OS-046,Operating System,lsm.exe,Negligible,0.1-0.4%,44-68 MB,0%,0 MB,3-5 W,34-36 °C
+OS-047,Operating System,audiodg.exe,Negligible,0.1-0.3%,36-76 MB,0%,0 MB,1-2 W,34-36 °C
+OS-048,Operating System,SecurityHealthService.exe,Low,3.1-4.7%,464-604 MB,0%,0 MB,14-22 W,36-40 °C
+OS-049,Operating System,WUDFHost.exe,Negligible,0.6-0.9%,13-34 MB,0%,0 MB,3-4 W,35-39 °C
+OS-050,Operating System,dns.exe (Windows DNS Server role),Low,3.5-6.9%,594-931 MB,0%,0 MB,14-20 W,42-48 °C
+BG-051,Background Services,Windows Update (wuauserv),Low,4.1-6.3%,244-462 MB,0%,0 MB,13-21 W,40-45 °C
+BG-052,Background Services,Windows Defender Antivirus Scan (MsMpEng.exe),Negligible,0.1-0.4%,25-48 MB,0%,0 MB,2-3 W,31-35 °C
+BG-053,Background Services,Windows Defender Real-Time Protection,Low,1.3-3.3%,401-674 MB,0%,0 MB,7-13 W,43-48 °C
+BG-054,Background Services,Background Intelligent Transfer Service (BITS),Low,4.6-7.5%,311-451 MB,0%,0 MB,9-17 W,43-50 °C
+BG-055,Background Services,Print Spooler (Spooler),Low,4.1-6.5%,434-644 MB,0%,0 MB,8-14 W,35-39 °C
+BG-056,Background Services,Task Scheduler Engine,Low,2.7-4.2%,359-539 MB,0%,0 MB,12-16 W,39-44 °C
+BG-057,Background Services,Windows Search Indexer (SearchIndexer.exe),Negligible,0.4-0.6%,35-50 MB,0%,0 MB,2-3 W,32-36 °C
+BG-058,Background Services,SysMain (Superfetch),Low,4.2-7.2%,240-405 MB,0%,0 MB,5-12 W,44-48 °C
+BG-059,Background Services,Remote Registry Service,Low,4.3-6.9%,518-964 MB,0%,0 MB,7-11 W,36-39 °C
+BG-060,Background Services,Server Service (LanmanServer),Low,3.4-5.0%,488-874 MB,0%,0 MB,7-14 W,42-45 °C
+BG-061,Background Services,Workstation Service (LanmanWorkstation),Low,5.1-6.4%,114-354 MB,0%,0 MB,13-23 W,39-45 °C
+BG-062,Background Services,DHCP Client Service,Negligible,0.5-0.8%,16-53 MB,0%,0 MB,3-4 W,31-36 °C
+BG-063,Background Services,DNS Client Service,Low,2.5-4.6%,305-608 MB,0%,0 MB,9-18 W,42-45 °C
+BG-064,Background Services,Windows Time Service (W32Time),Low,3.7-6.7%,492-772 MB,0%,0 MB,14-24 W,37-44 °C
+BG-065,Background Services,Group Policy Client Service,Low,3.0-5.1%,505-731 MB,0%,0 MB,15-24 W,36-43 °C
+BG-066,Background Services,Volume Shadow Copy Service (VSS),Negligible,0.4-0.7%,30-45 MB,0%,0 MB,3-4 W,31-36 °C
+BG-067,Background Services,Windows Firewall Service (MpsSvc),Low,4.7-7.5%,253-395 MB,0%,0 MB,16-20 W,41-46 °C
+BG-068,Background Services,Network List Service,Low,3.9-6.5%,372-767 MB,0%,0 MB,6-11 W,41-45 °C
+BG-069,Background Services,Network Location Awareness (NLA),Low,3.0-5.3%,336-716 MB,0%,0 MB,9-17 W,37-41 °C
+BG-070,Background Services,Certificate Propagation Service,Negligible,0.2-0.4%,39-76 MB,0%,0 MB,1-2 W,33-37 °C
+BG-071,Background Services,Credential Manager Service,Low,3.2-4.9%,156-357 MB,0%,0 MB,8-12 W,35-40 °C
+BG-072,Background Services,Device Setup Manager Service,Negligible,0.6-0.9%,48-65 MB,0%,0 MB,3-4 W,35-39 °C
+BG-073,Background Services,Distributed Link Tracking Client,Low,2.8-4.4%,128-571 MB,0%,0 MB,11-19 W,39-41 °C
+BG-074,Background Services,Windows Event Log Service,Low,1.2-2.6%,412-649 MB,0%,0 MB,17-21 W,42-47 °C
+BG-075,Background Services,Windows Management Instrumentation (WMI),Low,1.9-4.3%,350-632 MB,0%,0 MB,15-25 W,38-43 °C
+BG-076,Background Services,Windows Push Notifications Service,Low,4.1-7.5%,215-422 MB,0%,0 MB,13-17 W,37-39 °C
+BG-077,Background Services,IP Helper Service (iphlpsvc),Negligible,0.3-0.7%,26-47 MB,0%,0 MB,3-4 W,33-37 °C
+BG-078,Background Services,Smart Card Service,Low,4.3-6.9%,467-907 MB,0%,0 MB,10-17 W,41-48 °C
+BG-079,Background Services,Windows Biometric Service,Low,1.3-2.8%,271-651 MB,0%,0 MB,12-17 W,36-42 °C
+BG-080,Background Services,Application Identity Service,Low,5.0-7.2%,374-538 MB,0%,0 MB,5-12 W,38-41 °C
+BG-081,Background Services,COM+ Event System,Negligible,0.6-1.0%,41-85 MB,0%,0 MB,3-5 W,32-33 °C
+BG-082,Background Services,Diagnostic Policy Service,Low,3.0-5.6%,608-805 MB,0%,0 MB,12-19 W,39-42 °C
+BG-083,Background Services,Windows Connection Manager,Low,2.4-5.1%,576-821 MB,0%,0 MB,13-18 W,44-50 °C
+BG-084,Background Services,Remote Procedure Call Locator,Low,2.9-4.7%,279-732 MB,0%,0 MB,10-16 W,44-50 °C
+BG-085,Background Services,Superfetch Cache Maintenance,Low,2.7-4.2%,301-684 MB,0%,0 MB,13-21 W,37-42 °C
+BG-086,Background Services,Delivery Optimization Service,Low,2.8-5.6%,167-621 MB,0%,0 MB,12-17 W,36-42 °C
+BG-087,Background Services,OneDrive Sync Engine (OneDrive.exe),Low,1.4-4.9%,606-894 MB,0%,0 MB,6-15 W,39-45 °C
+BG-088,Background Services,NVIDIA Telemetry Container,Low,2.1-5.2%,643-861 MB,1.7-3.1%,1.11-1.76 GB,16-25 W,37-44 °C
+BG-089,Background Services,NVIDIA Display Container LS,Low,4.9-7.2%,555-785 MB,0.9-2.7%,1.2-1.84 GB,7-14 W,38-43 °C
+BG-090,Background Services,Google Update Service (gupdate),Low,2.9-4.8%,205-569 MB,0%,0 MB,12-16 W,42-44 °C
+BG-091,Background Services,Adobe Genuine Software Service,Low,4.0-7.0%,314-667 MB,0%,0 MB,15-25 W,39-42 °C
+BG-092,Background Services,Java Update Scheduler (jusched.exe),Low,3.5-6.7%,585-866 MB,0%,0 MB,11-18 W,42-46 °C
+BG-093,Background Services,Apple Mobile Device Service,Low,1.6-3.8%,637-885 MB,0%,0 MB,13-21 W,43-49 °C
+BG-094,Background Services,Realtek Audio Universal Service,Low,2.6-4.4%,498-883 MB,0%,0 MB,15-19 W,36-41 °C
+BG-095,Background Services,Intel(R) Dynamic Platform and Thermal Framework,Low,5.2-8.0%,341-511 MB,0%,0 MB,13-22 W,39-45 °C
+BG-096,Background Services,Dell SupportAssist Agent,Low,1.2-4.2%,263-522 MB,0%,0 MB,7-13 W,40-47 °C
+BG-097,Background Services,HP Support Assistant Service,Negligible,0.1-0.6%,43-65 MB,0%,0 MB,3-4 W,33-35 °C
+BG-098,Background Services,Bonjour Service (mDNSResponder),Negligible,0.1-0.5%,59-94 MB,0%,0 MB,1-3 W,32-36 °C
+BG-099,Background Services,Windows Modules Installer (TrustedInstaller service),Low,2.8-4.4%,569-772 MB,0%,0 MB,10-16 W,37-42 °C
+BG-100,Background Services,Cryptographic Services (CryptSvc),Low,5.2-6.9%,642-994 MB,0%,0 MB,8-15 W,41-47 °C
+ML-101,Machine Learning,TensorFlow model.fit() training run,High,47.5-68.5%,19.17-24.7 GB,71.7-81.9%,15.19-21.85 GB,490-804 W,80-85 °C
+ML-102,Machine Learning,PyTorch training loop (ResNet-50),Medium,11.2-16.3%,3.43-6.28 GB,16.9-25.8%,6.49-8.6 GB,35-77 W,62-68 °C
+ML-103,Machine Learning,PyTorch DataLoader worker,Low,4.5-6.2%,557-852 MB,2.4-4.5%,416-806 MB,17-21 W,44-50 °C
+ML-104,Machine Learning,Keras Sequential model training,High,51.1-70.0%,13.27-23.51 GB,50.4-65.6%,19.64-30.43 GB,453-719 W,82-94 °C
+ML-105,Machine Learning,scikit-learn RandomForestClassifier fit,Medium,12.8-19.0%,4.96-6.81 GB,1.8-3.7%,0.76-1.39 GB,78-125 W,51-55 °C
+ML-106,Machine Learning,XGBoost training job,High,28.1-38.6%,15.74-22.61 GB,1.1-3.5%,0.84-1.51 GB,414-718 W,83-93 °C
+ML-107,Machine Learning,LightGBM training job,Low,3.6-6.9%,255-617 MB,0.7-2.2%,290-857 MB,17-22 W,43-49 °C
+ML-108,Machine Learning,CatBoost training job,High,30.1-38.8%,20.21-27.63 GB,2.0-3.9%,0.72-1.03 GB,504-680 W,72-81 °C
+ML-109,Machine Learning,Jupyter kernel executing training notebook,Medium,14.0-21.4%,1.98-4.93 GB,31.6-44.1%,3.66-8.61 GB,99-141 W,60-63 °C
+ML-110,Machine Learning,MLflow experiment run,Low,1.6-3.5%,537-866 MB,0.0-1.3%,156-765 MB,6-10 W,39-43 °C
+ML-111,Machine Learning,Hugging Face Trainer fine-tuning (BERT-base),High,38.6-60.2%,8.62-18.8 GB,73.4-88.4%,19.7-33.34 GB,177-416 W,76-86 °C
+ML-112,Machine Learning,Hugging Face Trainer fine-tuning (DistilBERT),High,27.0-35.0%,16.76-20.91 GB,57.4-74.1%,21.21-28.6 GB,598-849 W,77-86 °C
+ML-113,Machine Learning,YOLOv8 object detection training,Medium,16.7-23.1%,4.23-7.05 GB,19.5-30.3%,3.37-6.06 GB,59-96 W,51-57 °C
+ML-114,Machine Learning,YOLOv5 inference batch job,High,50.7-68.3%,14.83-19.2 GB,52.3-65.9%,24.51-32.36 GB,209-337 W,84-93 °C
+ML-115,Machine Learning,ONNX Runtime inference session,High,34.5-51.8%,18.8-29.7 GB,69.5-91.5%,22.09-29.73 GB,410-578 W,80-86 °C
+ML-116,Machine Learning,CUDA cuDNN convolution benchmark,High,28.1-39.2%,11.26-18.46 GB,65.1-84.0%,22.45-33.26 GB,401-673 W,80-90 °C
+ML-117,Machine Learning,Ray Tune hyperparameter search,High,44.0-55.6%,12.89-16.54 GB,73.5-89.2%,18.73-24.32 GB,435-555 W,81-87 °C
+ML-118,Machine Learning,Optuna hyperparameter optimization,High,29.3-40.9%,12.67-24.18 GB,66.1-86.8%,14.61-26.21 GB,172-306 W,77-84 °C
+ML-119,Machine Learning,Albumentations image augmentation pipeline,High,32.4-51.0%,9.64-16.85 GB,57.6-75.1%,20.18-30.91 GB,170-387 W,79-83 °C
+ML-120,Machine Learning,H2O AutoML search,Medium,15.8-22.9%,2.22-3.56 GB,25.4-36.0%,2.78-6.14 GB,42-85 W,58-63 °C
+ML-121,Machine Learning,Google AutoML Vision training job,Medium,12.4-17.7%,1.33-3.14 GB,24.0-34.2%,5.84-8.35 GB,55-116 W,52-62 °C
+ML-122,Machine Learning,scikit-image feature extraction job,High,27.4-47.4%,11.5-20.05 GB,1.6-3.0%,381-932 MB,300-457 W,78-82 °C
+ML-123,Machine Learning,OpenCV DNN module inference,High,34.5-56.3%,17.29-22.13 GB,52.8-63.6%,14.92-20.61 GB,492-624 W,84-94 °C
+ML-124,Machine Learning,Pandas feature engineering pipeline,High,43.4-64.0%,17.26-29.15 GB,1.0-3.4%,388-1011 MB,361-639 W,82-91 °C
+ML-125,Machine Learning,Dask distributed training worker,Medium,11.2-16.4%,1.24-4.33 GB,16.6-32.4%,7.13-10.78 GB,63-102 W,57-65 °C
+ML-126,Machine Learning,Apache Spark MLlib training job,Low,2.9-5.9%,461-704 MB,1.4-2.4%,76-457 MB,16-21 W,41-46 °C
+ML-127,Machine Learning,TensorBoard logging process,Medium,15.2-23.7%,3.2-5.75 GB,22.6-39.1%,4.32-8.54 GB,76-97 W,58-63 °C
+ML-128,Machine Learning,Weights & Biases sync agent,High,32.7-50.8%,17.45-28.67 GB,73.6-85.6%,21.79-27.38 GB,307-674 W,80-88 °C
+ML-129,Machine Learning,PyTorch Lightning training run,Medium,11.2-15.9%,4.33-7.37 GB,29.1-44.5%,6.43-10.33 GB,64-111 W,55-61 °C
+ML-130,Machine Learning,FastAI training loop,Medium,17.7-22.3%,4.22-5.74 GB,36.0-43.1%,3.77-8.03 GB,63-105 W,59-66 °C
+ML-131,Machine Learning,Detectron2 instance segmentation training,Medium,14.1-17.6%,1.76-4.51 GB,28.1-44.4%,6.33-7.98 GB,52-103 W,62-69 °C
+ML-132,Machine Learning,Mask R-CNN training job,High,31.3-41.8%,21.9-32.0 GB,74.4-84.2%,23.4-33.19 GB,348-663 W,82-90 °C
+ML-133,Machine Learning,GAN training loop (StyleGAN2),Medium,16.3-23.6%,1.58-3.24 GB,28.5-44.4%,5.33-7.19 GB,88-144 W,53-62 °C
+ML-134,Machine Learning,Variational Autoencoder training,Medium,16.5-19.6%,4.82-7.88 GB,33.6-50%,4.49-7.38 GB,53-89 W,51-56 °C
+ML-135,Machine Learning,Reinforcement learning training (Stable-Baselines3 PPO),Medium,16.6-23.0%,4.32-5.71 GB,21.0-36.4%,6.18-8.16 GB,78-116 W,50-54 °C
+ML-136,Machine Learning,Reinforcement learning training (OpenAI Gym env),Medium,13.6-20.5%,3.22-4.54 GB,21.1-30.0%,2.29-5.26 GB,85-123 W,51-61 °C
+ML-137,Machine Learning,AlphaFold protein structure inference,Medium,14.4-20.4%,4.02-5.78 GB,15.0-24.6%,5.42-7.58 GB,75-117 W,54-64 °C
+ML-138,Machine Learning,Time-series forecasting (Prophet) fit,Medium,12.0-17.3%,3.67-7.12 GB,0.8-1.5%,0.95-1.49 GB,80-126 W,59-67 °C
+ML-139,Machine Learning,Time-series forecasting (ARIMA) fit,Medium,11.6-16.2%,3.7-6.78 GB,2.1-4.5%,0.57-1.0 GB,35-85 W,61-65 °C
+ML-140,Machine Learning,Feature scaling / normalization pipeline (scikit-learn),Medium,17.0-21.5%,2.3-4.33 GB,2.4-4.0%,45-816 MB,46-103 W,51-58 °C
+ML-141,Machine Learning,Cross-validation grid search (GridSearchCV),High,36.8-49.8%,14.33-25.97 GB,1.0-2.1%,0.83-1.39 GB,509-691 W,71-79 °C
+ML-142,Machine Learning,Model quantization job (TensorFlow Lite converter),Medium,13.6-18.0%,1.34-4.01 GB,21.4-34.1%,4.56-8.47 GB,51-72 W,60-66 °C
+ML-143,Machine Learning,Model pruning job (PyTorch),Low,2.2-5.6%,626-788 MB,1.9-3.3%,0.96-1.74 GB,16-20 W,40-47 °C
+ML-144,Machine Learning,ONNX model export job,Medium,10.4-16.8%,2.52-5.9 GB,15.7-22.8%,4.7-7.5 GB,58-80 W,52-57 °C
+ML-145,Machine Learning,TensorRT engine build,High,31.7-40.3%,18.59-26.39 GB,60.4-76.0%,16.4-23.15 GB,351-725 W,74-86 °C
+ML-146,Machine Learning,Data labeling pipeline (Label Studio backend),Medium,9.4-12.4%,1.73-4.52 GB,35.9-50%,7.81-12.0 GB,75-125 W,57-62 °C
+ML-147,Machine Learning,Feature store sync job (Feast),Medium,15.3-23.3%,3.68-6.67 GB,25.7-32.4%,3.21-5.19 GB,84-104 W,57-62 °C
+ML-148,Machine Learning,Kubeflow Pipelines training component,Low,3.3-5.9%,148-386 MB,3.0-5%,0.63-1.47 GB,15-18 W,44-49 °C
+ML-149,Machine Learning,SageMaker training container (local sim),High,28.5-48.3%,15.94-24.48 GB,70.7-79.5%,20.45-33.16 GB,524-773 W,75-80 °C
+ML-150,Machine Learning,NVIDIA DALI data loading pipeline,Low,1.9-5.3%,388-618 MB,0.2-1.3%,1.15-1.64 GB,13-20 W,36-41 °C
+LLM-151,LLM Model Execution,llama.cpp inference (Llama 3 8B),Medium,9.7-16.0%,4.79-6.67 GB,34.4-40.2%,7.18-8.97 GB,96-149 W,53-58 °C
+LLM-152,LLM Model Execution,"llama.cpp inference (Llama 3 70B, quantized)",Medium,13.1-19.4%,2.22-5.61 GB,25.1-40.2%,6.11-8.65 GB,30-52 W,55-62 °C
+LLM-153,LLM Model Execution,Ollama serving Mistral 7B,Medium,11.2-18.0%,4.08-7.24 GB,35.5-42.3%,4.22-7.69 GB,49-88 W,53-58 °C
+LLM-154,LLM Model Execution,Ollama serving Mixtral 8x7B,High,50.5-70.0%,14.02-25.71 GB,74.4-93.9%,27.69-38.95 GB,235-390 W,85-93 °C
+LLM-155,LLM Model Execution,vLLM serving Llama 2 13B,Low,3.1-4.4%,318-604 MB,0.7-2.5%,60-569 MB,12-21 W,41-45 °C
+LLM-156,LLM Model Execution,vLLM serving GPT-J 6B,Medium,12.4-20.2%,4.06-6.98 GB,22.7-32.8%,5.42-7.6 GB,66-88 W,56-64 °C
+LLM-157,LLM Model Execution,text-generation-webui running LLaMA 2 7B,Medium,9.3-12.4%,2.57-6.04 GB,26.7-36.4%,2.87-6.47 GB,55-76 W,50-58 °C
+LLM-158,LLM Model Execution,FastChat serving Vicuna 13B,Low,3.2-4.6%,595-779 MB,2.8-4.1%,0.47-1.2 GB,15-22 W,40-44 °C
+LLM-159,LLM Model Execution,Hugging Face transformers pipeline (text-generation),High,37.8-44.8%,12.77-17.29 GB,61.2-72.8%,27.1-39.85 GB,433-702 W,74-83 °C
+LLM-160,LLM Model Execution,Hugging Face transformers pipeline (summarization),Low,3.4-5.0%,128-422 MB,1.6-3.6%,0.93-1.5 GB,15-20 W,40-46 °C
+LLM-161,LLM Model Execution,GPT-NeoX 20B inference,High,33.5-42.6%,17.94-24.99 GB,70.9-92.2%,26.66-38.07 GB,178-327 W,73-80 °C
+LLM-162,LLM Model Execution,Falcon 40B inference session,High,33.5-42.9%,21.13-27.61 GB,59.6-78.5%,24.11-34.62 GB,462-735 W,73-79 °C
+LLM-163,LLM Model Execution,GGUF quantized model inference (Q4_K_M),Medium,17.6-25.0%,4.24-7.02 GB,2.1-3.7%,0.58-1.27 GB,95-145 W,53-60 °C
+LLM-164,LLM Model Execution,LM Studio local inference session,High,47.1-68.9%,19.59-25.63 GB,57.8-75.8%,17.82-26.35 GB,265-504 W,73-81 °C
+LLM-165,LLM Model Execution,Triton Inference Server serving LLM,Low,3.9-5.3%,441-770 MB,0.7-2.6%,0.64-1.38 GB,6-12 W,41-44 °C
+LLM-166,LLM Model Execution,DeepSpeed inference engine (ZeRO-Inference),Medium,17.8-25.0%,1.66-4.31 GB,33.5-44.6%,5.9-10.05 GB,47-78 W,51-59 °C
+LLM-167,LLM Model Execution,TensorRT-LLM execution,Medium,13.5-20.3%,4.93-8.0 GB,18.7-34.7%,3.05-7.77 GB,100-136 W,56-66 °C
+LLM-168,LLM Model Execution,LangChain agent execution,Low,4.9-8.0%,105-427 MB,0.3-2.8%,0.34-1.33 GB,12-18 W,43-50 °C
+LLM-169,LLM Model Execution,LlamaIndex RAG query pipeline,Medium,16.2-20.8%,4.07-6.71 GB,30.1-35.5%,4.02-6.56 GB,76-103 W,57-65 °C
+LLM-170,LLM Model Execution,Sentence-Transformers embedding generation,High,38.9-47.0%,17.64-22.79 GB,53.8-65.6%,16.17-22.92 GB,256-566 W,84-91 °C
+LLM-171,LLM Model Execution,OpenAI Whisper transcription (large-v3),Medium,10.7-15.4%,1.99-4.68 GB,24.8-32.0%,6.12-10.85 GB,92-144 W,58-66 °C
+LLM-172,LLM Model Execution,Stable Diffusion XL image generation,Low,2.5-4.1%,631-924 MB,1.4-3.8%,0.45-1.24 GB,16-24 W,42-49 °C
+LLM-173,LLM Model Execution,Stable Diffusion 1.5 inference batch,Medium,13.4-19.1%,2.52-5.82 GB,17.4-32.8%,7.42-9.62 GB,65-91 W,60-66 °C
+LLM-174,LLM Model Execution,ComfyUI workflow execution,High,27.5-42.2%,19.65-27.05 GB,63.9-77.8%,12.97-21.7 GB,513-815 W,76-87 °C
+LLM-175,LLM Model Execution,Automatic1111 WebUI inference,Medium,8.5-13.1%,1.27-4.75 GB,34.6-40.7%,7.6-9.21 GB,56-108 W,59-69 °C
+LLM-176,LLM Model Execution,Chroma vector database query,High,35.1-55.9%,14.46-25.76 GB,1.1-2.0%,1.16-2.0 GB,210-548 W,72-84 °C
+LLM-177,LLM Model Execution,Pinecone local index build,Medium,15.4-19.3%,1.01-2.12 GB,0.9-2.8%,0.65-1.33 GB,87-116 W,54-59 °C
+LLM-178,LLM Model Execution,FAISS similarity search job,Low,4.0-5.4%,549-823 MB,2.3-4.6%,19-474 MB,6-9 W,40-46 °C
+LLM-179,LLM Model Execution,Semantic Kernel plugin execution,Medium,12.1-16.0%,1.91-5.08 GB,16.2-27.6%,3.74-8.09 GB,80-113 W,57-65 °C
+LLM-180,LLM Model Execution,AutoGPT autonomous agent loop,High,48.7-70.0%,15.51-22.58 GB,57.4-72.9%,21.94-33.34 GB,229-519 W,78-82 °C
+LLM-181,LLM Model Execution,BabyAGI task loop,High,46.2-58.0%,14.0-18.85 GB,60.2-78.8%,19.96-32.48 GB,285-584 W,82-94 °C
+LLM-182,LLM Model Execution,Claude API local proxy cache layer,High,40.0-48.9%,11.5-16.81 GB,1.9-4.3%,1.02-1.38 GB,476-639 W,74-84 °C
+LLM-183,LLM Model Execution,Local RAG document ingestion pipeline,Medium,9.9-17.0%,4.04-6.46 GB,25.1-41.0%,4.0-8.85 GB,26-86 W,62-65 °C
+LLM-184,LLM Model Execution,GPT4All local model inference,Low,3.0-4.7%,435-640 MB,2.7-4.5%,0.93-1.5 GB,11-17 W,37-42 °C
+LLM-185,LLM Model Execution,Phi-3 model inference (Microsoft),Medium,16.2-23.0%,4.2-6.03 GB,19.3-28.3%,2.27-6.8 GB,81-100 W,57-64 °C
+LLM-186,LLM Model Execution,Gemma 7B inference,High,29.1-41.1%,13.47-24.07 GB,63.5-80.5%,23.51-30.23 GB,520-886 W,80-88 °C
+LLM-187,LLM Model Execution,Command R+ inference,High,29.6-47.7%,15.03-26.33 GB,64.6-81.5%,12.99-17.52 GB,531-892 W,80-90 °C
+LLM-188,LLM Model Execution,Mistral-7B-Instruct fine-tuning (LoRA),Medium,8.7-12.1%,1.92-4.09 GB,16.3-29.3%,7.6-12.0 GB,74-94 W,56-62 °C
+LLM-189,LLM Model Execution,QLoRA fine-tuning job,High,39.5-50.7%,15.23-24.69 GB,61.6-83.2%,15.01-28.21 GB,386-562 W,79-85 °C
+LLM-190,LLM Model Execution,PEFT adapter training,High,27.1-49.0%,14.61-20.25 GB,68.8-80.3%,25.91-30.9 GB,596-879 W,70-78 °C
+LLM-191,LLM Model Execution,Text embedding batch job (local endpoint),High,26.5-33.4%,10.47-18.27 GB,61.7-80.8%,21.51-34.11 GB,193-444 W,71-76 °C
+LLM-192,LLM Model Execution,Speech synthesis (Coqui TTS) inference,Low,4.7-6.9%,126-288 MB,2.8-5%,692-1023 MB,16-21 W,44-49 °C
+LLM-193,LLM Model Execution,Whisper.cpp transcription,High,50.1-61.5%,16.12-24.48 GB,2.5-4.5%,0.65-1.22 GB,483-803 W,80-85 °C
+LLM-194,LLM Model Execution,LLM token streaming server (llama-cpp-python server),High,26.4-40.1%,20.08-26.54 GB,70.8-92.6%,18.67-30.45 GB,163-348 W,85-93 °C
+LLM-195,LLM Model Execution,Multi-modal inference (LLaVA),High,36.7-54.1%,17.51-21.83 GB,66.7-86.0%,23.98-28.98 GB,219-519 W,80-90 °C
+LLM-196,LLM Model Execution,Function-calling agent execution,Medium,8.9-17.1%,2.87-5.78 GB,17.1-23.5%,4.59-8.04 GB,63-87 W,51-58 °C
+LLM-197,LLM Model Execution,Retrieval-augmented chatbot backend,High,48.3-55.3%,13.96-24.1 GB,69.6-85.1%,28.68-35.26 GB,384-677 W,73-79 °C
+LLM-198,LLM Model Execution,Model context caching service,Medium,8.6-13.8%,2.77-5.0 GB,0.2-1.4%,0.3-1.03 GB,70-97 W,51-56 °C
+LLM-199,LLM Model Execution,Prompt evaluation batch job (local LangSmith),Low,2.4-5.0%,546-791 MB,1.0-3.2%,1.03-2.0 GB,7-12 W,44-47 °C
+LLM-200,LLM Model Execution,KV-cache paged attention server (vLLM continuous batching),High,51.2-62.5%,18.01-25.73 GB,65.5-76.1%,18.32-30.52 GB,327-469 W,78-87 °C
+GAM-201,Gaming,Cyberpunk 2077,High,29.9-48.7%,8.39-18.1 GB,75.5-85.5%,25.4-37.75 GB,181-516 W,82-92 °C
+GAM-202,Gaming,Counter-Strike 2,Low,3.7-5.3%,465-835 MB,2.4-3.2%,1.19-1.82 GB,10-16 W,43-49 °C
+GAM-203,Gaming,Call of Duty: Warzone,High,26.0-48.0%,18.1-28.53 GB,66.0-87.2%,13.84-20.47 GB,449-605 W,79-88 °C
+GAM-204,Gaming,Fortnite,High,43.3-56.3%,18.84-30.55 GB,61.6-68.5%,16.35-25.55 GB,383-648 W,79-86 °C
+GAM-205,Gaming,Minecraft Java Edition (client),Medium,12.7-19.3%,3.9-5.32 GB,36.0-47.1%,3.77-8.49 GB,31-87 W,59-64 °C
+GAM-206,Gaming,Minecraft Java Edition (dedicated server),Medium,12.6-16.4%,3.03-5.25 GB,1.3-3.3%,392-914 MB,86-110 W,60-68 °C
+GAM-207,Gaming,Valorant,High,46.6-68.0%,18.66-26.6 GB,64.9-76.9%,19.16-27.89 GB,509-787 W,73-82 °C
+GAM-208,Gaming,League of Legends,Medium,8.3-14.5%,1.83-4.33 GB,23.2-37.0%,3.23-7.37 GB,86-107 W,51-60 °C
+GAM-209,Gaming,Grand Theft Auto V,Low,2.5-4.1%,163-519 MB,1.5-3.9%,385-971 MB,10-14 W,38-43 °C
+GAM-210,Gaming,Red Dead Redemption 2,Low,4.4-7.2%,265-602 MB,0.3-1.2%,145-671 MB,7-15 W,40-44 °C
+GAM-211,Gaming,Elden Ring,Low,3.4-5.5%,370-682 MB,2.8-5%,213-640 MB,8-13 W,43-48 °C
+GAM-212,Gaming,Apex Legends,Medium,17.7-23.1%,1.82-3.81 GB,26.8-40.0%,4.46-7.68 GB,78-116 W,52-59 °C
+GAM-213,Gaming,World of Warcraft,Low,2.2-4.0%,398-591 MB,1.4-3.4%,0.92-1.6 GB,6-10 W,42-49 °C
+GAM-214,Gaming,Dota 2,Medium,13.5-20.6%,4.19-6.32 GB,19.6-30.0%,6.42-10.2 GB,44-101 W,50-55 °C
+GAM-215,Gaming,Rust (dedicated server),Low,2.8-6.3%,530-745 MB,2.4-4.2%,0.42-1.22 GB,13-17 W,36-40 °C
+GAM-216,Gaming,ARK: Survival Evolved (dedicated server),Low,4.4-6.8%,395-727 MB,0.5-3.0%,0.35-1.05 GB,16-23 W,43-50 °C
+GAM-217,Gaming,Baldur's Gate 3,Low,5.0-8.0%,0.59-1.0 GB,2.6-3.6%,1.04-1.51 GB,14-22 W,42-48 °C
+GAM-218,Gaming,Starfield,Medium,9.5-15.8%,3.64-5.61 GB,16.6-31.6%,6.61-9.52 GB,81-130 W,61-67 °C
+GAM-219,Gaming,Forza Horizon 5,Medium,11.3-13.9%,4.25-7.1 GB,30.3-41.2%,5.98-8.74 GB,30-72 W,53-59 °C
+GAM-220,Gaming,Overwatch 2,Low,3.1-4.9%,257-573 MB,0.4-2.6%,0.95-1.87 GB,14-17 W,41-47 °C
+GAM-221,Gaming,PUBG: Battlegrounds,Low,1.5-4.7%,345-483 MB,2.9-4.0%,0.83-1.22 GB,13-17 W,43-47 °C
+GAM-222,Gaming,Escape from Tarkov,High,34.7-42.8%,17.57-26.62 GB,51.4-68.0%,24.2-35.8 GB,343-480 W,71-77 °C
+GAM-223,Gaming,Genshin Impact,Low,1.6-3.2%,477-619 MB,2.1-4.3%,1.19-1.78 GB,7-10 W,38-45 °C
+GAM-224,Gaming,Rocket League,Low,1.4-3.4%,266-528 MB,2.4-4.7%,0.77-1.54 GB,6-13 W,40-44 °C
+GAM-225,Gaming,Team Fortress 2,Medium,15.4-21.7%,1.64-3.69 GB,29.4-45.2%,2.52-4.37 GB,81-126 W,55-64 °C
+GAM-226,Gaming,Palworld (dedicated server),Medium,16.1-20.1%,3.71-5.37 GB,1.8-3.8%,0.34-1.3 GB,27-83 W,61-65 °C
+GAM-227,Gaming,Valheim (dedicated server),High,38.8-57.3%,12.26-16.31 GB,2.7-5%,608-996 MB,375-643 W,78-90 °C
+GAM-228,Gaming,7 Days to Die (dedicated server),Medium,17.5-20.9%,4.62-7.06 GB,1.1-3.0%,0.92-1.88 GB,83-102 W,51-56 °C
+GAM-229,Gaming,Destiny 2,Low,4.9-8.0%,321-552 MB,2.1-4.2%,0.51-1.09 GB,13-19 W,36-39 °C
+GAM-230,Gaming,Diablo IV,Low,3.1-4.7%,548-860 MB,1.2-3.0%,1.0-1.78 GB,6-14 W,42-48 °C
+GAM-231,Gaming,Hogwarts Legacy,Low,2.0-5.3%,164-501 MB,0.2-2.1%,0.79-1.21 GB,5-9 W,35-40 °C
+GAM-232,Gaming,The Witcher 3: Wild Hunt,Medium,13.3-20.5%,4.03-5.49 GB,17.7-32.5%,3.61-8.21 GB,83-103 W,60-65 °C
+GAM-233,Gaming,Microsoft Flight Simulator,Low,2.1-5.5%,448-747 MB,1.5-2.4%,1.03-1.45 GB,7-15 W,43-49 °C
+GAM-234,Gaming,Assassin's Creed Valhalla,Low,2.0-4.3%,124-542 MB,0.7-2.3%,471-885 MB,16-25 W,40-47 °C
+GAM-235,Gaming,Battlefield 2042,High,42.7-53.0%,11.58-22.87 GB,58.6-78.4%,21.6-26.97 GB,453-579 W,73-82 °C
+GAM-236,Gaming,Halo Infinite,Low,5.0-6.2%,358-588 MB,2.5-3.9%,680-993 MB,7-14 W,38-43 °C
+GAM-237,Gaming,EA Sports FC 24,Medium,11.8-20.1%,5.19-8.0 GB,30.4-42.3%,6.78-8.8 GB,95-115 W,56-64 °C
+GAM-238,Gaming,Age of Empires IV,High,48.7-70.0%,8.02-17.14 GB,72.9-91.1%,13.75-23.14 GB,257-499 W,71-83 °C
+GAM-239,Gaming,Total War: Warhammer III,High,32.6-40.0%,11.33-22.04 GB,61.2-82.0%,19.7-31.23 GB,411-657 W,80-87 °C
+GAM-240,Gaming,Sea of Thieves,High,40.3-53.9%,21.88-27.47 GB,57.0-68.8%,25.45-36.52 GB,481-677 W,74-78 °C
+GAM-241,Gaming,Terraria (dedicated server),Low,1.6-4.5%,160-333 MB,1.3-2.6%,148-712 MB,14-20 W,39-46 °C
+GAM-242,Gaming,Stardew Valley,Low,1.7-4.4%,558-922 MB,0.1-2.3%,403-775 MB,8-13 W,40-45 °C
+GAM-243,Gaming,Space Engineers (dedicated server),Medium,16.4-19.9%,5.0-8.0 GB,1.7-3.4%,116-497 MB,85-109 W,51-59 °C
+GAM-244,Gaming,Satisfactory (dedicated server),Low,1.5-4.6%,306-649 MB,1.9-3.7%,0.31-1.18 GB,5-9 W,43-48 °C
+GAM-245,Gaming,Left 4 Dead 2,Low,1.4-4.5%,548-727 MB,2.8-3.7%,1.11-1.71 GB,14-20 W,38-43 °C
+GAM-246,Gaming,Garry's Mod (dedicated server),Medium,10.2-13.9%,2.18-5.39 GB,0.1-1.9%,302-821 MB,56-99 W,51-56 °C
+GAM-247,Gaming,Squad (dedicated server),Low,2.8-5.4%,542-761 MB,3.0-4.7%,24-605 MB,14-20 W,42-46 °C
+GAM-248,Gaming,Warframe,High,38.6-51.4%,10.59-16.87 GB,55.9-76.8%,25.08-29.85 GB,596-848 W,82-94 °C
+GAM-249,Gaming,Path of Exile,Low,1.4-4.1%,248-650 MB,2.8-3.6%,1.2-1.65 GB,15-24 W,38-45 °C
+GAM-250,Gaming,Star Citizen,Low,1.7-4.2%,547-911 MB,2.7-3.5%,0.84-1.8 GB,12-19 W,37-44 °C
+HOST-251,Hosting,IIS Worker Process (w3wp.exe),Medium,13.5-17.1%,1.16-2.35 GB,0%,0 MB,70-90 W,56-61 °C
+HOST-252,Hosting,Apache HTTP Server (httpd),Low,4.4-6.3%,198-596 MB,0%,0 MB,15-19 W,36-42 °C
+HOST-253,Hosting,Nginx reverse proxy,Low,4.3-7.4%,0.56-1.0 GB,0%,0 MB,9-19 W,39-41 °C
+HOST-254,Hosting,Microsoft SQL Server (sqlservr.exe),Medium,11.3-19.6%,4.08-6.2 GB,0%,0 MB,73-113 W,54-62 °C
+HOST-255,Hosting,MySQL Server (mysqld),Medium,10.3-16.3%,1.74-3.54 GB,0%,0 MB,77-101 W,59-68 °C
+HOST-256,Hosting,PostgreSQL Server (postgres),Medium,16.7-23.8%,3.38-4.88 GB,0%,0 MB,49-103 W,57-65 °C
+HOST-257,Hosting,MongoDB Server (mongod),Low,4.9-6.3%,513-729 MB,0%,0 MB,17-21 W,43-46 °C
+HOST-258,Hosting,Redis Server,Medium,12.6-16.7%,2.05-3.26 GB,0%,0 MB,44-68 W,50-56 °C
+HOST-259,Hosting,Docker container - nginx,Medium,17.9-25.0%,3.07-5.05 GB,0%,0 MB,66-89 W,56-65 °C
+HOST-260,Hosting,Docker container - node-app,Low,1.7-2.9%,569-803 MB,0%,0 MB,9-18 W,36-39 °C
+HOST-261,Hosting,Kubernetes kubelet,Medium,9.6-12.6%,4.96-8.0 GB,0%,0 MB,50-112 W,61-69 °C
+HOST-262,Hosting,Kubernetes kube-proxy,Medium,17.6-21.1%,4.74-6.17 GB,0%,0 MB,33-60 W,52-60 °C
+HOST-263,Hosting,Node.js Express server,Medium,14.7-19.1%,1.4-3.42 GB,0%,0 MB,66-106 W,51-54 °C
+HOST-264,Hosting,Apache Tomcat servlet container,Low,2.2-4.9%,433-636 MB,0%,0 MB,5-10 W,38-40 °C
+HOST-265,Hosting,RabbitMQ broker,Low,2.3-4.3%,371-724 MB,0%,0 MB,6-13 W,37-44 °C
+HOST-266,Hosting,Elasticsearch node,Medium,9.9-12.7%,2.85-4.54 GB,0%,0 MB,88-131 W,52-60 °C
+HOST-267,Hosting,FileZilla FTP Server,Low,1.4-3.3%,400-853 MB,0%,0 MB,12-19 W,43-49 °C
+HOST-268,Hosting,Minecraft server hosting process,Medium,17.8-24.5%,4.93-7.39 GB,0%,0 MB,43-74 W,55-64 °C
+HOST-269,Hosting,Plex Media Server,Low,3.1-6.4%,544-901 MB,1.9-2.8%,0.91-1.33 GB,17-25 W,42-45 °C
+HOST-270,Hosting,Microsoft Exchange Server (Transport service),Medium,8.8-15.4%,1.85-4.91 GB,0%,0 MB,36-81 W,54-62 °C
+HOST-271,Hosting,WordPress hosting (PHP-FPM worker),Low,1.4-3.8%,406-822 MB,0%,0 MB,11-21 W,35-41 °C
+HOST-272,Hosting,phpMyAdmin (Apache-hosted),Medium,9.1-12.6%,3.38-5.86 GB,0%,0 MB,97-120 W,51-60 °C
+HOST-273,Hosting,Jenkins CI Server,Medium,16.8-24.6%,4.69-6.38 GB,0%,0 MB,74-118 W,56-60 °C
+HOST-274,Hosting,GitLab Runner,Medium,9.5-15.6%,3.91-5.06 GB,0%,0 MB,92-125 W,53-61 °C
+HOST-275,Hosting,TeamSpeak 3 Server,Medium,17.1-19.8%,4.43-6.23 GB,0%,0 MB,46-86 W,58-62 °C
+HOST-276,Hosting,Discord bot hosting process (Node.js),Low,1.6-5.0%,346-751 MB,0%,0 MB,8-14 W,41-44 °C
+HOST-277,Hosting,Nextcloud server (PHP-FPM),Low,4.8-6.9%,369-674 MB,0%,0 MB,9-13 W,42-45 °C
+HOST-278,Hosting,Home Assistant server,Medium,9.4-17.0%,4.69-5.81 GB,0%,0 MB,39-95 W,60-65 °C
+HOST-279,Hosting,Grafana server,Medium,8.5-13.2%,1.84-3.79 GB,0%,0 MB,60-96 W,61-69 °C
+HOST-280,Hosting,Prometheus server,Low,2.6-5.1%,198-619 MB,0%,0 MB,12-17 W,36-43 °C
+HOST-281,Hosting,InfluxDB server,Low,2.2-4.2%,190-514 MB,0%,0 MB,17-25 W,41-47 °C
+HOST-282,Hosting,HAProxy load balancer,Medium,14.6-20.3%,4.63-8.0 GB,0%,0 MB,76-116 W,52-56 °C
+HOST-283,Hosting,Squid proxy server,Low,1.9-4.5%,623-992 MB,0%,0 MB,14-18 W,43-50 °C
+HOST-284,Hosting,OpenVPN server,Medium,10.6-15.9%,3.84-6.91 GB,0%,0 MB,55-78 W,56-64 °C
+HOST-285,Hosting,WireGuard VPN server,Medium,13.7-19.8%,2.19-4.91 GB,0%,0 MB,61-95 W,53-59 °C
+HOST-286,Hosting,Samba file server (smbd),Medium,10.7-17.4%,4.75-6.53 GB,0%,0 MB,36-88 W,61-69 °C
+HOST-287,Hosting,NFS server,Medium,14.7-21.3%,4.03-6.69 GB,0%,0 MB,100-130 W,55-61 °C
+HOST-288,Hosting,vsftpd FTP server,Low,3.4-6.9%,552-802 MB,0%,0 MB,14-21 W,41-45 °C
+HOST-289,Hosting,Memcached server,Medium,13.2-20.8%,4.53-7.73 GB,0%,0 MB,39-62 W,52-56 °C
+HOST-290,Hosting,Cassandra node,Low,5.0-8.0%,463-673 MB,0%,0 MB,8-17 W,39-46 °C
+HOST-291,Hosting,CouchDB server,Medium,10.7-15.0%,4.58-6.78 GB,0%,0 MB,90-134 W,61-65 °C
+HOST-292,Hosting,Kafka broker,Low,3.1-6.3%,312-547 MB,0%,0 MB,6-15 W,36-40 °C
+HOST-293,Hosting,Zookeeper node,Medium,18.1-25.0%,5.14-6.54 GB,0%,0 MB,90-116 W,51-56 °C
+HOST-294,Hosting,MinIO object storage server,Low,2.3-3.5%,351-557 MB,0%,0 MB,14-21 W,36-43 °C
+HOST-295,Hosting,Portainer container management,Low,1.5-3.7%,338-615 MB,0%,0 MB,11-14 W,40-46 °C
+HOST-296,Hosting,Traefik reverse proxy,Low,4.7-7.7%,394-539 MB,0%,0 MB,5-13 W,37-44 °C
+HOST-297,Hosting,Certbot renewal service,Medium,9.3-14.1%,3.47-4.93 GB,0%,0 MB,87-119 W,53-62 °C
+HOST-298,Hosting,Webmin control panel service,Medium,12.4-19.1%,1.56-5.05 GB,0%,0 MB,62-113 W,52-61 °C
+HOST-299,Hosting,Ghost blogging platform (Node.js),Medium,8.2-12.1%,5.14-6.7 GB,0%,0 MB,27-67 W,51-59 °C
+HOST-300,Hosting,Caddy web server,Low,2.6-5.2%,528-868 MB,0%,0 MB,12-15 W,36-43 °C
+DISK-301,Disk Read/Write,CHKDSK scan,Low,3.9-6.0%,311-626 MB,0%,0 MB,11-15 W,41-47 °C
+DISK-302,Disk Read/Write,Windows Defender full disk scan,Medium,12.3-15.4%,3.19-5.76 GB,0%,0 MB,78-115 W,61-67 °C
+DISK-303,Disk Read/Write,Robocopy large file transfer,Low,2.2-5.2%,376-711 MB,0%,0 MB,14-23 W,44-48 °C
+DISK-304,Disk Read/Write,Storage Spaces resync,Medium,11.0-13.8%,3.08-4.64 GB,0%,0 MB,95-128 W,50-58 °C
+DISK-305,Disk Read/Write,RAID array rebuild,Low,4.5-7.2%,183-350 MB,0%,0 MB,11-19 W,36-40 °C
+DISK-306,Disk Read/Write,BitLocker drive encryption pass,Low,2.9-6.4%,246-401 MB,0%,0 MB,15-24 W,43-47 °C
+DISK-307,Disk Read/Write,Disk Defragmenter (defrag.exe),Medium,12.3-15.6%,4.58-7.81 GB,0%,0 MB,26-51 W,58-63 °C
+DISK-308,Disk Read/Write,Veeam Backup & Replication job,Medium,17.7-21.9%,4.08-6.04 GB,0%,0 MB,51-74 W,55-61 °C
+DISK-309,Disk Read/Write,Windows Server Backup job,Medium,15.0-20.4%,2.77-5.99 GB,0%,0 MB,38-62 W,59-69 °C
+DISK-310,Disk Read/Write,mysqldump database backup,Low,1.4-4.7%,368-690 MB,0%,0 MB,10-18 W,42-47 °C
+DISK-311,Disk Read/Write,pg_dump database backup,Low,3.0-5.3%,592-873 MB,0%,0 MB,6-13 W,35-42 °C
+DISK-312,Disk Read/Write,Volume Shadow Copy (VSS) snapshot creation,Low,5.1-7.8%,288-595 MB,0%,0 MB,13-17 W,41-45 °C
+DISK-313,Disk Read/Write,SearchIndexer.exe file indexing,Medium,14.8-21.1%,1.62-4.7 GB,0%,0 MB,92-137 W,50-60 °C
+DISK-314,Disk Read/Write,7-Zip archive extraction,Medium,16.7-24.4%,1.31-3.57 GB,0%,0 MB,43-104 W,51-55 °C
+DISK-315,Disk Read/Write,WinRAR archive creation,Medium,12.1-16.1%,2.93-5.94 GB,0%,0 MB,59-115 W,55-59 °C
+DISK-316,Disk Read/Write,HandBrake video transcode (disk write),Medium,15.6-18.3%,2.69-3.83 GB,0%,0 MB,66-121 W,60-69 °C
+DISK-317,Disk Read/Write,Log rotation write job,Medium,17.1-23.0%,3.75-5.92 GB,0%,0 MB,51-105 W,60-69 °C
+DISK-318,Disk Read/Write,qBittorrent seeding,Medium,13.7-20.0%,2.99-5.65 GB,0%,0 MB,79-102 W,59-64 °C
+DISK-319,Disk Read/Write,rsync file synchronization,Medium,11.6-17.9%,4.36-6.75 GB,0%,0 MB,53-76 W,61-67 °C
+DISK-320,Disk Read/Write,tar archive creation,Medium,9.1-15.3%,1.79-5.12 GB,0%,0 MB,54-93 W,59-67 °C
+DISK-321,Disk Read/Write,SQL Server transaction log write,Low,4.2-5.3%,451-807 MB,0%,0 MB,6-16 W,39-44 °C
+DISK-322,Disk Read/Write,Hyper-V VM disk snapshot commit,Low,5.0-6.1%,508-826 MB,0%,0 MB,10-17 W,43-50 °C
+DISK-323,Disk Read/Write,VMware vSAN resync,Low,3.9-5.4%,552-724 MB,0%,0 MB,13-20 W,38-45 °C
+DISK-324,Disk Read/Write,ZFS scrub operation,Medium,18.0-25.0%,4.2-5.92 GB,0%,0 MB,97-150 W,55-59 °C
+DISK-325,Disk Read/Write,NTFS journal update,Medium,14.1-22.0%,3.15-6.27 GB,0%,0 MB,66-99 W,59-66 °C
+DISK-326,Disk Read/Write,Robocopy mirror job (/MIR),Low,1.8-4.4%,261-511 MB,0%,0 MB,13-23 W,41-48 °C
+DISK-327,Disk Read/Write,xcopy batch transfer,Medium,15.2-22.3%,3.36-5.84 GB,0%,0 MB,96-146 W,58-67 °C
+DISK-328,Disk Read/Write,Windows Update disk staging,Medium,17.0-22.0%,1.05-2.36 GB,0%,0 MB,54-75 W,51-56 °C
+DISK-329,Disk Read/Write,SSD TRIM operation,Low,5.1-7.9%,181-340 MB,0%,0 MB,14-19 W,40-44 °C
+DISK-330,Disk Read/Write,Storage tiering migration (ReFS),Medium,9.0-16.8%,4.11-7.27 GB,0%,0 MB,81-124 W,53-61 °C
+DISK-331,Disk Read/Write,Database index rebuild (SQL Server),Medium,15.1-17.9%,2.6-4.67 GB,0%,0 MB,84-133 W,62-65 °C
+DISK-332,Disk Read/Write,Full-text index population,Medium,10.1-17.8%,4.61-6.75 GB,0%,0 MB,42-88 W,59-64 °C
+DISK-333,Disk Read/Write,Event log archival write,Low,4.3-7.7%,263-459 MB,0%,0 MB,13-18 W,37-42 °C
+DISK-334,Disk Read/Write,Crash dump write (memory.dmp),Medium,8.4-12.6%,2.11-3.55 GB,0%,0 MB,88-107 W,56-65 °C
+DISK-335,Disk Read/Write,Page file write operation,Low,1.6-3.5%,128-568 MB,0%,0 MB,12-20 W,39-45 °C
+DISK-336,Disk Read/Write,Windows Search catalog rebuild,Medium,8.7-15.5%,3.21-6.6 GB,0%,0 MB,64-117 W,52-59 °C
+DISK-337,Disk Read/Write,Duplicati backup job,Medium,8.9-12.8%,1.9-3.76 GB,0%,0 MB,52-80 W,59-66 °C
+DISK-338,Disk Read/Write,Restic backup job,Low,1.5-3.4%,233-580 MB,0%,0 MB,16-21 W,35-42 °C
+DISK-339,Disk Read/Write,rclone cloud sync job,Medium,17.3-25.0%,2.62-4.99 GB,0%,0 MB,46-105 W,60-65 °C
+DISK-340,Disk Read/Write,Docker image layer pull/write,Medium,13.0-17.3%,3.74-5.57 GB,0%,0 MB,31-54 W,62-70 °C
+DISK-341,Disk Read/Write,Git large repository clone,Low,3.6-5.2%,449-657 MB,0%,0 MB,13-22 W,37-43 °C
+DISK-342,Disk Read/Write,Video surveillance NVR recording write,Medium,14.6-22.7%,4.14-5.56 GB,0%,0 MB,59-93 W,51-54 °C
+DISK-343,Disk Read/Write,Database transaction checkpoint,Medium,13.7-19.7%,1.96-3.64 GB,0%,0 MB,54-100 W,55-58 °C
+DISK-344,Disk Read/Write,Exchange Server mailbox database write,Low,3.2-5.9%,443-826 MB,0%,0 MB,12-20 W,36-43 °C
+DISK-345,Disk Read/Write,SharePoint content database write,Low,2.2-4.9%,436-666 MB,0%,0 MB,16-22 W,42-45 °C
+DISK-346,Disk Read/Write,Print job spooling to disk,Low,3.2-4.6%,317-713 MB,0%,0 MB,12-21 W,36-42 °C
+DISK-347,Disk Read/Write,Windows Installer (MSI) package write,Medium,17.8-20.4%,4.67-6.07 GB,0%,0 MB,28-72 W,55-62 °C
+DISK-348,Disk Read/Write,System Restore point creation,Low,2.3-5.2%,601-851 MB,0%,0 MB,10-17 W,40-43 °C
+DISK-349,Disk Read/Write,Disk cleanup temp file purge,Low,3.6-5.3%,164-519 MB,0%,0 MB,12-15 W,42-49 °C
+DISK-350,Disk Read/Write,iSCSI target disk write,Medium,14.6-17.6%,3.82-5.49 GB,0%,0 MB,40-84 W,61-67 °C
+GEN-351,General/Browsing,Google Chrome - browsing tab,Low,2.0-3.7%,139-340 MB,0%,0 MB,11-16 W,41-47 °C
+GEN-352,General/Browsing,Google Chrome - YouTube video playback tab,Negligible,0.4-0.8%,62-81 MB,0.9-3.1%,0.85-1.6 GB,2-3 W,34-37 °C
+GEN-353,General/Browsing,Google Chrome - Gmail tab,Low,2.9-5.8%,370-544 MB,0%,0 MB,13-16 W,38-44 °C
+GEN-354,General/Browsing,Google Chrome - Google Docs tab,Low,1.8-4.7%,447-821 MB,0%,0 MB,16-25 W,41-47 °C
+GEN-355,General/Browsing,Microsoft Edge - browsing tab,Low,4.2-5.8%,120-343 MB,0%,0 MB,16-23 W,41-44 °C
+GEN-356,General/Browsing,Microsoft Edge - Outlook Web Access tab,Low,4.7-7.2%,575-757 MB,0%,0 MB,11-15 W,38-41 °C
+GEN-357,General/Browsing,Mozilla Firefox - browsing tab,Negligible,0.6-1.0%,47-84 MB,0%,0 MB,1-2 W,33-37 °C
+GEN-358,General/Browsing,Mozilla Firefox - Netflix streaming tab,Low,1.6-4.5%,621-772 MB,2.3-3.4%,325-800 MB,13-20 W,42-46 °C
+GEN-359,General/Browsing,Spotify Desktop - music playback,Low,4.7-5.9%,460-632 MB,0%,0 MB,17-24 W,37-44 °C
+GEN-360,General/Browsing,Spotify Desktop - podcast playback,Low,3.4-5.4%,310-639 MB,0%,0 MB,16-19 W,37-45 °C
+GEN-361,General/Browsing,Zoom Meeting Client,Negligible,0.3-0.7%,29-67 MB,0%,0 MB,3-4 W,35-38 °C
+GEN-362,General/Browsing,Microsoft Teams,Negligible,0.4-0.6%,18-37 MB,0%,0 MB,2-4 W,34-37 °C
+GEN-363,General/Browsing,Outlook desktop email sync,Low,1.5-4.2%,366-695 MB,0%,0 MB,13-19 W,37-40 °C
+GEN-364,General/Browsing,Slack Desktop,Low,1.6-3.9%,594-780 MB,0%,0 MB,7-16 W,40-44 °C
+GEN-365,General/Browsing,Adobe Acrobat Reader (PDF viewing),Low,3.7-6.9%,504-908 MB,0%,0 MB,16-21 W,40-45 °C
+GEN-366,General/Browsing,Microsoft Word (document editing),Low,1.9-4.0%,179-506 MB,0%,0 MB,14-22 W,40-43 °C
+GEN-367,General/Browsing,Microsoft Excel (spreadsheet open),Low,4.9-7.4%,138-399 MB,0%,0 MB,7-10 W,40-47 °C
+GEN-368,General/Browsing,Microsoft PowerPoint (idle),Low,4.5-7.0%,198-629 MB,0%,0 MB,12-21 W,40-46 °C
+GEN-369,General/Browsing,Notepad++,Negligible,0.5-0.9%,39-53 MB,0%,0 MB,3-5 W,33-36 °C
+GEN-370,General/Browsing,Visual Studio Code (idle editor),Low,3.9-6.0%,620-915 MB,0%,0 MB,14-20 W,42-49 °C
+GEN-371,General/Browsing,Windows File Explorer,Low,3.4-5.5%,241-627 MB,0%,0 MB,16-20 W,40-45 °C
+GEN-372,General/Browsing,Windows Photos Viewer,Low,1.0-3.9%,104-412 MB,0%,0 MB,11-17 W,37-43 °C
+GEN-373,General/Browsing,Steam Client (idle/background),Low,1.4-3.5%,425-648 MB,0%,0 MB,11-18 W,41-48 °C
+GEN-374,General/Browsing,Discord (voice chat idle),Low,1.9-4.3%,409-606 MB,0%,0 MB,12-18 W,44-49 °C
+GEN-375,General/Browsing,Discord (text chat browsing),Low,2.7-4.1%,579-756 MB,0%,0 MB,8-16 W,44-46 °C
+GEN-376,General/Browsing,WhatsApp Desktop,Low,4.3-7.3%,440-800 MB,0%,0 MB,6-11 W,41-47 °C
+GEN-377,General/Browsing,Telegram Desktop,Low,3.0-5.5%,149-373 MB,0%,0 MB,9-17 W,42-49 °C
+GEN-378,General/Browsing,OneNote background sync,Low,3.8-5.5%,634-791 MB,0%,0 MB,14-19 W,39-42 °C
+GEN-379,General/Browsing,VLC Media Player (local video playback),Low,4.9-7.2%,208-600 MB,1.5-3.5%,0.74-1.51 GB,9-17 W,44-46 °C
+GEN-380,General/Browsing,Windows Calculator,Low,2.7-5.4%,325-528 MB,0%,0 MB,5-13 W,43-48 °C
+GEN-381,General/Browsing,Windows Settings App,Low,3.3-5.8%,293-695 MB,0%,0 MB,8-17 W,39-43 °C
+GEN-382,General/Browsing,Windows Snipping Tool,Negligible,0.2-0.5%,40-70 MB,0%,0 MB,2-3 W,33-35 °C
+GEN-383,General/Browsing,Windows Sticky Notes,Low,4.3-6.0%,345-606 MB,0%,0 MB,11-16 W,38-44 °C
+GEN-384,General/Browsing,Paint (mspaint.exe),Low,4.8-7.9%,367-589 MB,0%,0 MB,10-18 W,37-43 °C
+GEN-385,General/Browsing,Windows Mail app,Low,2.7-4.6%,397-762 MB,0%,0 MB,8-13 W,39-45 °C
+GEN-386,General/Browsing,Skype,Low,3.3-4.8%,274-483 MB,0%,0 MB,12-16 W,42-49 °C
+GEN-387,General/Browsing,Signal Desktop,Negligible,0.5-0.7%,23-45 MB,0%,0 MB,2-3 W,35-38 °C
+GEN-388,General/Browsing,Amazon Kindle app,Low,1.5-2.7%,630-928 MB,0%,0 MB,5-14 W,44-50 °C
+GEN-389,General/Browsing,Google Chrome - Facebook tab,Low,2.3-5.6%,588-913 MB,0%,0 MB,8-13 W,42-47 °C
+GEN-390,General/Browsing,Google Chrome - Twitter/X tab,Low,4.2-5.5%,391-667 MB,0%,0 MB,16-20 W,38-45 °C
+GEN-391,General/Browsing,Google Chrome - Reddit tab,Low,2.9-4.3%,387-628 MB,0%,0 MB,5-13 W,38-41 °C
+GEN-392,General/Browsing,Google Chrome - LinkedIn tab,Low,4.6-6.1%,246-471 MB,0%,0 MB,17-22 W,37-41 °C
+GEN-393,General/Browsing,Google Chrome - Amazon shopping tab,Low,4.2-6.1%,322-606 MB,0%,0 MB,12-22 W,41-48 °C
+GEN-394,General/Browsing,Microsoft Edge - Bing search tab,Low,4.4-6.8%,575-777 MB,0%,0 MB,15-23 W,39-42 °C
+GEN-395,General/Browsing,Firefox - Wikipedia browsing tab,Low,1.6-4.8%,450-761 MB,0%,0 MB,9-15 W,37-44 °C
+GEN-396,General/Browsing,Notion desktop app,Negligible,0.2-0.3%,22-43 MB,0%,0 MB,3-4 W,34-37 °C
+GEN-397,General/Browsing,Evernote desktop app,Low,3.3-6.4%,291-563 MB,0%,0 MB,9-17 W,40-46 °C
+GEN-398,General/Browsing,Windows Media Player,Low,3.3-6.7%,258-502 MB,1.5-3.6%,549-913 MB,12-19 W,44-50 °C
+GEN-399,General/Browsing,iTunes (idle),Low,4.9-7.0%,439-709 MB,0%,0 MB,16-19 W,38-42 °C
+GEN-400,General/Browsing,CCleaner scan,Low,4.0-6.5%,319-745 MB,0%,0 MB,14-24 W,42-47 °C
