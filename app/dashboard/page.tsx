@@ -77,13 +77,13 @@ export default function Dashboard() {
     scene.add(rimLight);
 
     const floor = new THREE.Mesh(
-      new THREE.PlaneGeometry(31, 18),
+      new THREE.PlaneGeometry(11, 14),
       new THREE.MeshStandardMaterial({ color: "#252b30", roughness: 0.86, metalness: 0.12 })
     );
     floor.rotation.x = -Math.PI / 2;
     floor.receiveShadow = false;
     scene.add(floor);
-    const grid = new THREE.GridHelper(31, 62, "#566067", "#40484e");
+    const grid = new THREE.GridHelper(11, 22, "#566067", "#40484e");
     grid.position.y = 0.012;
     grid.material.transparent = true;
     grid.material.opacity = 0.42;
@@ -155,7 +155,7 @@ export default function Dashboard() {
         rack.position.set(
           (column - 2.5) * (rackWidth + columnGap) - center.x * scale,
           -bounds.min.y * scale,
-          ((row - 4.5) * (rackDepth + rowGap) + (row >= 3 ? 0.7 : -0.7)) - center.z * scale
+          (row - 4.5) * (rackDepth + rowGap) - center.z * scale
         );
         rack.traverse((object) => {
           if (object instanceof THREE.Mesh) {
