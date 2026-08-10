@@ -1,20 +1,26 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 function Glitch({ children }: { children: string }) {
-  const [text, setText] = useState(children);
+  const [text, setText] = useState("");
+  const [started, setStarted] = useState(false);
+  const ref = useRef<HTMLSpanElement>(null);
   useEffect(() => {
-    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-    let frame = 0;
+    const observer = new IntersectionObserver(([entry]) => entry.isIntersecting && setStarted(true), { threshold: .2 });
+    if (ref.current) observer.observe(ref.current);
+    return () => observer.disconnect();
+  }, []);
+  useEffect(() => {
+    if (!started) return;
+    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"; let frame = 0;
     const timer = window.setInterval(() => {
-      frame += 1;
-      setText(children.split("").map((c, i) => c === " " || i < frame / 2 ? c : chars[Math.floor(Math.random() * chars.length)]).join(""));
+      frame += 1; setText(children.split("").map((c, i) => c === " " || i < frame / 2 ? c : chars[Math.floor(Math.random() * chars.length)]).join(""));
       if (frame > children.length * 2 + 4) { clearInterval(timer); setText(children); }
-    }, 38);
+    }, 34);
     return () => clearInterval(timer);
-  }, [children]);
-  return <span>{text}</span>;
+  }, [started, children]);
+  return <span ref={ref} className="glitch-reveal">{text || "\u00a0"}</span>;
 }
 
 const tanishq = ["MongoDB", "Express", "React", "Node.js", "Kubernetes", "Python", "C++", "JavaScript", "SwiftUI", "Unreal Engine", "Unity", "Godot"];
@@ -27,7 +33,6 @@ function PersonCard({ name, role, image, bio, stack, pending = false }: { name: 
       <h2>{name}</h2>
       <p className="person-bio">{bio}</p>
       <div className="stack">{stack.map(item => <span key={item}>{item}</span>)}</div>
-      {pending && <p className="pending">Aaroh’s resume was not included in the imported files. Add it to replace this placeholder profile.</p>}
     </div>
   </article>;
 }
@@ -35,7 +40,7 @@ function PersonCard({ name, role, image, bio, stack, pending = false }: { name: 
 export default function About() {
   return <main>
     <div className="wallpaper"><i /><i /><i /><i /><i /></div>
-    <header className="header"><a className="logo" href="/">EQUINOX</a><nav><a href="/">Home</a><a className="header-cta" href="/about">About <span>↗</span></a></nav></header>
+    <header className="header"><a className="logo" href="/">EQUINOX</a><nav><a href="/">Home</a><a href="/login">Login</a><a className="header-cta" href="/login">Dashboard <span>↗</span></a></nav></header>
     <section className="about-hero">
       <p className="eyebrow"><span className="pulse" /> ABOUT EQUINOX / 01</p>
       <h1><Glitch>ENERGY-AWARE</Glitch><br /><span className="accent">COMPUTE.</span></h1>
@@ -48,7 +53,7 @@ export default function About() {
     <section className="people section"><p className="eyebrow">THE PEOPLE / 03</p><h2><Glitch>BUILT BY</Glitch><br /><span className="accent">SYSTEMS THINKERS.</span></h2>
       <div className="people-grid">
         <PersonCard name="TANISHQ" role="Full-Stack Systems Engineer" image="/tanishq.jpeg" bio="Founder and lead engineer with eight years of hands-on experience across full-stack web development, distributed systems, game engines, and server infrastructure. For Equinox, the focus is a clear, responsive interface around reliable workload and node orchestration." stack={tanishq} />
-        <PersonCard name="AAROH DHARMAADHIKARI" role="Systems & ML Collaborator" bio="Collaborates on Equinox as part of the two-person build team, shaping the workload simulation, resource telemetry, and optimization logic behind energy-aware node management. His focus is turning high-variance task behavior into useful signals for safer migration and better cluster balance." stack={["Python", "Machine Learning", "Telemetry", "Workload Simulation", "Data Analysis", "Cluster Optimization"]} />
+         <PersonCard name="AAROH DHARMADHIKARI" role="AI & Data Science Developer" image="/aaroh.png" bio="Aaroh Dharmadhikari is an AI and Data Science undergraduate building intelligent, practical, and scalable software at the intersection of AI, machine learning, NLP, and full-stack development. He designs reliable applications, deep-learning systems, and language technology that turn complex problems into meaningful real-world impact." stack={["Python", "Machine Learning", "NLP", "Deep Learning", "Telemetry", "Workload Migration", "Data Science", "Full-Stack Development", "Power Efficiency"]} />
       </div>
     </section>
     <footer><span className="logo">EQUINOX</span><span>ALGORITHMIC ENERGY-AWARE WORKLOAD ORCHESTRATION</span><span>© 2026</span></footer>

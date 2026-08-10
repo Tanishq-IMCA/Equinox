@@ -1,27 +1,31 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
-
-const bars = [34, 52, 46, 68, 55, 78, 63, 48, 72, 59, 82, 66, 88, 74, 91, 68];
+import { useEffect, useRef, useState } from "react";
 
 function Glitch({ children, className = "" }: { children: React.ReactNode; className?: string }) {
   const value = String(children);
-  const [text, setText] = useState(value);
+  const [text, setText] = useState("");
+  const [started, setStarted] = useState(false);
+  const ref = useRef<HTMLSpanElement>(null);
   useEffect(() => {
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting && !started) setStarted(true);
+    }, { threshold: 0.2 });
+    if (ref.current) observer.observe(ref.current);
+    return () => observer.disconnect();
+  }, [started]);
+  useEffect(() => {
+    if (!started) return;
     const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     let frame = 0;
     const timer = window.setInterval(() => {
       frame += 1;
       setText(value.split("").map((c, i) => (c === " " || i < frame / 2 ? c : chars[Math.floor(Math.random() * chars.length)])).join(""));
-      if (frame > value.length * 2 + 4) {
-        window.clearInterval(timer);
-        setText(value);
-      }
-    }, 38);
+      if (frame > value.length * 2 + 4) { window.clearInterval(timer); setText(value); }
+    }, 34);
     return () => window.clearInterval(timer);
-  }, [value]);
-  return <span className={className}>{text}</span>;
+  }, [started, value]);
+  return <span ref={ref} className={`glitch-reveal ${className}`}>{text || "\u00a0"}</span>;
 }
 
 export default function Home() {
@@ -30,7 +34,7 @@ export default function Home() {
       <div className="wallpaper"><i /><i /><i /><i /><i /></div>
       <header className="header">
         <a className="logo" href="/">EQUINOX</a>
-        <nav><a href="#system">System</a><a href="/about">About</a><a className="header-cta" href="#system">Explore <span>↗</span></a></nav>
+        <nav><a href="#system">System</a><a href="/about">About</a><a href="/login">Login</a><a className="header-cta" href="/login">Explore <span>↗</span></a></nav>
       </header>
 
       <section className="hero">
@@ -43,7 +47,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="ticker"><div><span>REAL-TIME TELEMETRY</span><span>WORKLOAD MIGRATION</span><span>THERMAL AWARENESS</span><span>POWER EFFICIENCY</span><span>REAL-TIME TELEMETRY</span><span>WORKLOAD MIGRATION</span></div></section>
+      <section className="ticker" aria-label="Equinox capabilities"><div><span>TELEMETRY</span><span>WORKLOAD MIGRATION</span><span>THERMAL AWARENESS</span><span>POWER EFFICIENCY</span><span>REAL-TIME TELEMETRY</span><span>WORKLOAD</span><span>TELEMETRY</span><span>WORKLOAD MIGRATION</span><span>THERMAL AWARENESS</span><span>POWER EFFICIENCY</span><span>REAL-TIME TELEMETRY</span><span>WORKLOAD</span></div></section>
 
       <section id="system" className="system section">
         <div className="section-heading"><div><p className="eyebrow">WHAT WE BUILD / 02</p><h2><Glitch>THE CLUSTER,</Glitch><br /><span className="accent">IN MOTION.</span></h2></div><p className="section-intro">Equinox turns noisy server telemetry into an active control loop. Every task has a cost. Every node has a better state.</p></div>
@@ -54,7 +58,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="closing"><p className="eyebrow">THE NEXT STATE</p><h2><Glitch>LESS WASTE.</Glitch><br /><span className="accent">MORE COMPUTE.</span></h2><a className="button primary" href="/about">About Equinox <span>↗</span></a></section>
+       <section className="closing"><p className="eyebrow">THE NEXT STATE</p><h2><Glitch>LESS WASTE.</Glitch><br /><span className="accent">MORE COMPUTE.</span></h2><a className="button primary" href="/login">Enter dashboard <span>↗</span></a></section>
       <footer><span className="logo">EQUINOX</span><span>ALGORITHMIC ENERGY-AWARE WORKLOAD ORCHESTRATION</span><span>© 2026</span></footer>
     </main>
   );
