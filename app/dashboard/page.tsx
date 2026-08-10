@@ -64,28 +64,20 @@ export default function Dashboard() {
       <div className="sidebar-footer"><span className="pulse" /> STREAM READY<br /><small>NO TELEMETRY ATTACHED</small></div>
       <button className="panel-toggle" onClick={() => setPanel(!panel)} aria-label="Toggle navigation">{panel ? "←" : "→"}</button>
     </aside>
-    <aside className={`slide-panel glass ${panel ? "is-open" : ""}`}>
-      <p className="eyebrow">COMMAND / 01</p><h2>CONTROL<br /><span className="accent">ROOM.</span></h2>
-      <p className="panel-copy">Welcome back. The cluster is within nominal operating range.</p>
-      <div className="live-metric"><span>POWER DRAW</span><strong>342.8 <small>kW</small></strong><i><b style={{ width: "61%" }} /></i></div>
-      <div className="live-metric"><span>THERMAL DELTA</span><strong>68.4 <small>°C</small></strong><i><b style={{ width: "68%" }} /></i></div>
-      <div className="live-metric"><span>ACTIVE WORKLOADS</span><strong>184 <small>/ 240</small></strong><i><b style={{ width: "77%" }} /></i></div>
-      <div className="panel-actions"><button className="button primary" onClick={() => alert("Optimization cycle queued.")}>Optimize <span>→</span></button><button className="button ghost" onClick={() => setPanel(false)}>Hide panel</button></div>
-    </aside>
     <section className={`dashboard-content ${switching ? "is-switching" : ""}`}>
       {visiblePage === "Overview" && <div className="overview-page">
-        <div className="dashboard-intro"><p className="eyebrow">AUTONOMOUS ENERGY SYSTEMS / 02</p><h1>CLUSTER<br /><span className="accent">OVERVIEW.</span></h1><p>Thirty nodes. One adaptive system. Watch workload migration, thermal awareness, and power efficiency in real time.</p></div>
+        <div className="dashboard-intro"><p className="eyebrow">AUTONOMOUS ENERGY SYSTEMS / 02</p><h1>CLUSTER <span className="accent">OVERVIEW.</span></h1><p>Thirty nodes. One adaptive system. Watch workload migration, thermal awareness, and power efficiency in real time.</p></div>
         <div className="overview-tools"><span className="room-status"><i /> ROOM A / 30 NODES</span><span>DRAG TO ROTATE</span><span>SCROLL TO ZOOM</span></div>
         <div className="rack-window glass">
           <div className="window-top"><span className="dot red" /><span className="dot yellow" /><span className="dot green" /><span className="window-label">LIVE NODE TELEMETRY / STANDBY</span></div>
           <div className="room-viewport" onPointerDown={startDrag} onPointerMove={moveDrag} onWheel={zoomScene}>
-            <div className="room-scene" style={{ transform: `scale(${zoom}) rotateX(${rotation.x}deg) rotateZ(${rotation.y / 8}deg) rotateY(${rotation.y}deg)` }}>
+            <div className="room-scene" style={{ transform: `scale(${zoom}) rotateX(${rotation.x}deg) rotateY(${rotation.y}deg)` }}>
               <div className="floor" />
               <div className="rack-grid">{nodes.map(node => <div className={`rack rack-${node.state}`} key={node.id}>
-                <div className="rack-top"><span>{node.id}</span></div>
                 <div className="rack-front"><div className="rack-lights">{Array.from({ length: 5 }, (_, i) => <i key={i} />)}</div><div className="rack-slots"><b /><b /><b /></div></div>
                 <div className="rack-back"><div className="rack-lights">{Array.from({ length: 5 }, (_, i) => <i key={i} />)}</div></div>
-                <div className="rack-side" />
+                <div className="rack-left" /><div className="rack-right" />
+                <div className="rack-top"><span>{node.id}</span></div><div className="rack-bottom" />
               </div>)}</div>
             </div>
           </div>
