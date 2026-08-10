@@ -6,7 +6,7 @@ import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 
-const nodes = Array.from({ length: 78 }, (_, i) => ({
+const nodes = Array.from({ length: 60 }, (_, i) => ({
   id: i + 1,
   state: [8, 21, 27].includes(i + 1) ? "offline" : i === 7 || i === 18 ? "warning" : i % 4 === 0 ? "ready" : "online",
 }));
@@ -81,7 +81,7 @@ export default function Dashboard() {
       new THREE.MeshStandardMaterial({ color: "#252b30", roughness: 0.86, metalness: 0.12 })
     );
     floor.rotation.x = -Math.PI / 2;
-    floor.receiveShadow = true;
+    floor.receiveShadow = false;
     scene.add(floor);
     const grid = new THREE.GridHelper(31, 62, "#566067", "#40484e");
     grid.position.y = 0.012;
@@ -148,12 +148,12 @@ export default function Dashboard() {
       };
       for (let index = 0; index < nodes.length; index += 1) {
         const rack = source.clone(true);
-        const column = index % 13;
-        const row = Math.floor(index / 13);
+        const column = index % 10;
+        const row = Math.floor(index / 10);
         rack.scale.setScalar(scale);
         const node = nodes[index];
         rack.position.set(
-          (column - 6) * (rackWidth + columnGap) - center.x * scale,
+          ((column - 4.5) * (rackWidth + columnGap) + (column >= 5 ? 0.7 : -0.7)) - center.x * scale,
           -bounds.min.y * scale,
           (row - 2.5) * (rackDepth + rowGap) - center.z * scale
         );
