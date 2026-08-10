@@ -77,41 +77,43 @@ export default function Dashboard() {
     scene.add(rimLight);
 
     const floor = new THREE.Mesh(
-      new THREE.PlaneGeometry(16, 32),
+      new THREE.PlaneGeometry(16, 28),
       new THREE.MeshStandardMaterial({ color: "#252b30", roughness: 0.86, metalness: 0.12 })
     );
     floor.rotation.x = -Math.PI / 2;
     floor.receiveShadow = false;
     scene.add(floor);
-    const grid = new THREE.GridHelper(16, 32, "#566067", "#40484e");
+    const grid = new THREE.GridHelper(16, 28, "#566067", "#40484e");
     grid.position.y = 0.012;
     grid.material.transparent = true;
     grid.material.opacity = 0.42;
     scene.add(grid);
 
     const sideWall = new THREE.Mesh(
-      new THREE.BoxGeometry(0.22, 3.4, 32),
+      new THREE.BoxGeometry(0.22, 2.38, 28),
       new THREE.MeshStandardMaterial({ color: "#1a2025", roughness: 0.92, metalness: 0.08 })
     );
-    sideWall.position.set(-8, 1.7, 0);
+    sideWall.position.set(-8, 1.19, 0);
     scene.add(sideWall);
     const endWall = new THREE.Mesh(
-      new THREE.BoxGeometry(16, 3.4, 0.22),
+      new THREE.BoxGeometry(16, 2.38, 0.22),
       new THREE.MeshStandardMaterial({ color: "#181e23", roughness: 0.92, metalness: 0.08 })
     );
-    endWall.position.set(0, 1.7, 16);
+    endWall.position.set(0, 1.19, 14);
     scene.add(endWall);
 
-    const neonMaterial = new THREE.LineBasicMaterial({
+    const neonMaterial = new THREE.MeshBasicMaterial({
       color: "#00f5b8",
       transparent: true,
       opacity: 0.92,
       depthWrite: false,
     });
+    const powerLineRadius = 0.055;
     const addPowerLine = (points: THREE.Vector3[]) => {
-      const line = new THREE.Line(new THREE.BufferGeometry().setFromPoints(points), neonMaterial);
+      const curve = new THREE.CatmullRomCurve3(points);
+      const line = new THREE.Mesh(new THREE.TubeGeometry(curve, Math.max(points.length * 8, 12), powerLineRadius, 6, false), neonMaterial);
       scene.add(line);
-      return line;
+      return curve;
     };
 
     let animationFrame = 0;
@@ -129,7 +131,7 @@ export default function Dashboard() {
       const rackDepth = size.z * scale;
       const columnGap = 1.05;
       const rowGap = 0.2;
-      const rackOriginZ = 4;
+      const rackOriginZ = 1.2;
       const statusColors: Record<string, string> = {
         online: "#42f59b",
         ready: "#ffd34f",
@@ -210,7 +212,7 @@ export default function Dashboard() {
       );
       const gridBackZ = rackOriginZ + 5 * (rackDepth + rowGap) + 0.3;
       const gridFrontZ = rackOriginZ - 5 * (rackDepth + rowGap) - 0.3;
-      const spineZ = 14.4;
+      const spineZ = 11.9;
       const tapeDepth = Math.max(rackDepth * 0.82, 0.5);
       const tapeWidth = Math.max(rackWidth * 0.72, 0.5);
 
@@ -235,7 +237,7 @@ export default function Dashboard() {
       ]);
       addPowerLine([
         new THREE.Vector3(rackXPositions[0], 0.05, spineZ),
-        new THREE.Vector3(-7.55, 0.05, spineZ),
+        new THREE.Vector3(-7.35, 0.05, spineZ),
       ]);
 
       const powerwallLoader = new GLTFLoader();
@@ -243,12 +245,16 @@ export default function Dashboard() {
         if (disposed) return;
         const powerwallBounds = new THREE.Box3().setFromObject(powerwallGltf.scene);
         const powerwallSize = powerwallBounds.getSize(new THREE.Vector3());
-        const powerwallScale = 1.7 / Math.max(powerwallSize.y, 0.001);
-        [15.2, 16.45, 17.7].forEach((z, index) => {
+        const powerwallScale = 1.25 / Math.max(powerwallSize.x, powerwallSize.y, powerwallSize.z, 0.001);
+        [11.9, 12.75, 13.6].forEach((z, index) => {
           const powerwall = powerwallGltf.scene.clone(true);
           powerwall.scale.setScalar(powerwallScale);
           powerwall.rotation.y = Math.PI / 2;
-          powerwall.position.set(-7.55, 1.3, z);
+          const powerwallGroup = new THREE.Group();
+          powerwallGroup.add(powerwall);
+          const mountedBounds = new THREE.Box3().setFromObject(powerwallGroup);
+          const mountedCenter = mountedBounds.getCenter(new THREE.Vector3());
+          powerwallGroup.position.set(-7.35 - mountedCenter.x, 0.92 - mountedCenter.y, z - mountedCenter.z);
           powerwall.traverse((object) => {
             if (object instanceof THREE.Mesh) {
               object.castShadow = true;
@@ -256,26 +262,20 @@ export default function Dashboard() {
               if (object.material instanceof THREE.Material) object.material = object.material.clone();
             }
           });
-          scene.add(powerwall);
-          addPowerLine([
-            new THREE.Vector3(-7.55, 0.05, z),
-            new THREE.Vector3(-7.55, 0.05, spineZ),
+          scene.add(powerwallGroup);
+          const route = addPowerLine([
+            new THREE.Vector3(-7.35, 0.05, z),
+            new THREE.Vector3(-7.35, 0.05, spineZ),
+            new THREE.Vector3(rackXPositions[0], 0.05, spineZ),
           ]);
           const pulseMaterial = new THREE.MeshBasicMaterial({
             color: "#b6fff0",
             transparent: true,
             opacity: 0.95,
           });
-          const curve = new THREE.CatmullRomCurve3([
-            new THREE.Vector3(-7.35, 0.16, z),
-            new THREE.Vector3(-7.0, 0.16, z),
-            new THREE.Vector3(-6.6, 0.16, spineZ),
-            new THREE.Vector3(rackXPositions[0], 0.16, spineZ),
-          ]);
-          const pulse = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.12, 0.22), pulseMaterial);
-          pulse.userData.powerCurve = curve;
-          scene.add(pulse);
-          powerPulses.push({ mesh: pulse, curve, offset: index / 3 });
+          const particle = new THREE.Mesh(new THREE.BoxGeometry(powerLineRadius * 2, powerLineRadius * 2, powerLineRadius * 2), pulseMaterial);
+          scene.add(particle);
+          powerPulses.push({ mesh: particle, curve: route, offset: index / 3 });
         });
       });
     });
