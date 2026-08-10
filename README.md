@@ -60,6 +60,8 @@ EQUINOX is an active enterprise prototype: a high-performance, glassmorphic data
 
 ## Data Center Hardware Bounds (Per Node Reference)
 
+These are reference limits for the simulator and apply per node unless noted.
+
 | Metric | Single Node Capacity | 30-Node Cluster Total |
 | :--- | :--- | :--- |
 | **System Memory (RAM)** | 120 GB | 3,600 GB (3.6 TB) |
@@ -68,11 +70,19 @@ EQUINOX is an active enterprise prototype: a high-performance, glassmorphic data
 | **Max Power Envelope** | 19.2 kW (19,200 W) | 576 kW Max Enclosure Envelope |
 | **Target Operating Envelope** | 80% Nominal / 20% Peak | Dynamic Multi-Node Migration |
 
+The current preview is a minimal Next.js landing page using the Devaudit
+reference aesthetic. The Python simulator and ML backend remain separate from
+this first landing-page pass.
+
 ---
 
 ## Local development
 
-Install the backend dependencies:
+Run the landing page locally:
 
 ```bash
-pip install -r backend/requirements.txt
+npm install
+npm run dev
+```
+
+The app runs on port 5000.

@@ -1,0 +1,90 @@
+this was the prompt by me in effort to explain the software.
+this was my prompt-
+We are starting a project, two people in total, The project title is Autonomous Energy-Aware Workload Migration Orchestrator: Algorithmic system utilizing real-time telemetry to dynamically migrate active workloads between clustered nodes, enabling automated idle-server shutdown for maximum power efficiency.
+
+
+
+Here is the idea:
+
+We are going to have a data engine which will simulate real time data and this data is in high variance, so the data engine data is suppose to generate live tasks incoming into our individual server modules with there life time of each tasks which are also reasonably set beside the tasks. We will then feed that into the preview of or server modules where we can see it consume resources in a task manager type list.
+
+It will show us the occupancy of our resources such as CPU,RAM,GPU,POWER, TEMPERATURE.
+
+This data will then be feed to our logic system which will be ML trained and will use the model to find the most efficient way to run a data center which will be the final output and demonstration of our project.
+
+
+
+The logic engine which is suppose use our model to efficiently distribute, assign, move tasks intelligently where the whole server room will run at optimal power and temperature if possible which should be the case 80 to 90 percent of the time howerver should it be that if our server room is enable to have enough resources in and out the tasks from to the point where the optimal temperature and power usage cannot be managed, it should send out a NOTICE into the system with the specified amount of assets which are needed to sustain this server room. 
+
+
+
+We have plans of UI designs and visuals but atm will work on the backend and skeleton however, before we get started with that , we need a library of a set of tasks equal categorized into 8 different categories. Here are the categories that u need to generate the data in:
+
+
+
+
+
+Operating System tasks(Low to negligible effect on our resources)
+
+
+
+Background services(Low to negligible effect on our resources)
+
+
+
+Machine learning(Med-high on CPU, GPU, Temperature and power)
+
+
+
+LLM model execution(Med-High on GPU, RAM, temperature and Power)
+
+
+
+Gaming(Low-high on CPU, GPU, RAM, Temperature and Power)
+
+
+
+Hosting(Low-Med on CPU, RAM and Power)
+
+
+
+Disk read/write(Low-Med on CPU, RAM and Power)
+
+
+
+General tasks such as browsing(Low on CPU, GPU, RAM and Power)
+
+
+
+When we mention low, medium or high. I don't want you to pick a fixed value but randomly pick a value from Low medium or high ranges.
+
+
+
+Give each and every task its own unique id in the library and keep the name of the tasks believable as if its a real task log from IRL which means u need to include real software, names and games including real OS logs and background services logs which actual exist in real life. Make it so that the logs have the names from windows server edition OS, same goes for the rest of the categories that we have.
+
+
+
+So for now in summary u need to make a excel sheet consisting of 50 tasks from each of those categories while giving it reasonable values for resource usage per task. 
+
+
+
+REMEMBER AT ALL TIMES THAT THE TASKS YOU GIVE ARE GOING TO BE PICKED RANDOMLY UNTIL THE TOTAL AMOUNT IS ANYWHERE BETWEEN 15 TO 20 TO BE PLACED IN OUR INDIVIDUAL NODE WHICH HAS A RAM OF 120 GBS AND THEN WE HAVE 60 GBS OF GPU MEMORY, TEMPERATURE CAP IS AT 100 C AND MAX CAPASITY OF POWER CONSUMPTION IS AVAILABLE AT 19.2KW AKA 19,200 WATTS. THIS IS JUST FOR A SINGULAR NODE, IN TOTAL WE HAVE 30 NODES PAIRED IN COLUMNS OF 5 AND ROWS OF 6. NOW THIS INFORMATION IS A REFERANCE TO U FOR UNDERSTANDING HOW RESONABLE VALUES U SHOULD ASSIGN TO EACH TASK FOR NOT TO MAKE THE SEVER OVERLOAD AND LEAVE SOME BREATHING ROOM WITH A PROBABILITY OF 80% MEDIUM USAGE PER NODE AND 20% OF IT BEING HIGH USAGE.
+
+
+
+Remember we need a total of 400 entries with 8 categories as specified with their individual names earlier . Make sure to put a range (for example for a single task, RAM usage would be x mb/gb - x mb/gb) rather than putting a definite usage value for each and every tasks. You already know which tasks are heavy and which are not.
+
+So for an example if we talk about a heavy category, keeps its tasks as mentioned before as medium - high for 80% of that totals tasks in that category and vice versa for other categories based on the medium, low and high usage.
+
+
+
+this was agents response and then the agent made us the file-
+I'll flag something before building this: your power budget doesn't obviously work, and I want that on the table before I bake 400 rows around it.
+
+(Likely) 19,200W ÷ ~17.5 average tasks per node = ~1,097W average draw per task. That's fine if a node's load is dominated by 2-3 heavy GPU jobs and the rest are near-zero (OS/background/browsing tasks pulling single-digit watts) — which is realistic. But it means your "low/medium" categories (OS, background, hosting, disk, browsing — 5 of 8 categories, 250 of 400 tasks) will contribute almost nothing to the power/thermal model, and the entire 80/20 medium/high distribution you care about rides on categories 3, 4, and 5 (ML, LLM, gaming — only 150 tasks). If your simulation later samples 15-20 tasks and gets unlucky with too many heavy ones, you'll blow 19.2kW immediately since a single heavy ML/LLM task alone could be 600-900W. That's not necessarily wrong, just something your selection algorithm will need to handle later (weighted sampling, not uniform random), not something to fix now.
+
+I'm proceeding with this understanding, tagged (guessing) since you didn't specify exact per-task wattage: I'm setting per-task power contribution tiers at negligible (1-5W) / low (5-25W) / medium (25-150W) / high (150-900W), CPU% as share of node CPU, RAM in MB/GB, GPU% and GPU memory in MB/GB, and component temperature in °C. These are my own reasonable engineering assumptions, not derived from a spec you gave — I'll document them in the sheet.
+
+Building it now.
+
+-----------------------------
