@@ -51,7 +51,7 @@ export default function Dashboard() {
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = 1.15;
     renderer.shadowMap.enabled = true;
-    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.shadowMap.type = THREE.PCFShadowMap;
     renderer.domElement.className = "rack-canvas";
     host.appendChild(renderer.domElement);
 
@@ -101,12 +101,12 @@ export default function Dashboard() {
       const scale = 1.9 / Math.max(size.y, 0.001);
       const rackWidth = size.x * scale;
       const rackDepth = size.z * scale;
-      const rowGap = 0.85;
+      const columnGap = 0.85;
       const statusColors: Record<string, string> = {
-        online: "#36d98b",
-        ready: "#e6b84d",
-        warning: "#ef6262",
-        offline: "#687178",
+        online: "#42f59b",
+        ready: "#ffd34f",
+        warning: "#ff5f67",
+        offline: "#b2bdc4",
       };
       const makeTopLabel = (node: typeof nodes[number], width: number, depth: number) => {
         const canvas = document.createElement("canvas");
@@ -115,16 +115,27 @@ export default function Dashboard() {
         const context = canvas.getContext("2d");
         if (!context) return null;
         context.clearRect(0, 0, canvas.width, canvas.height);
-        context.fillStyle = `${statusColors[node.state]}9c`;
+        context.fillStyle = "rgba(18,25,30,.78)";
         context.fillRect(7, 7, 242, 114);
-        context.strokeStyle = "rgba(210,220,224,.55)";
+        context.strokeStyle = statusColors[node.state];
         context.lineWidth = 3;
         context.strokeRect(8.5, 8.5, 239, 111);
-        context.fillStyle = "rgba(205,213,216,.92)";
-        context.font = "bold 66px Gotham, Arial";
+        context.fillStyle = statusColors[node.state];
+        context.font = 'bold 66px "Gotham Black", Arial';
         context.textAlign = "center";
         context.textBaseline = "middle";
-        context.fillText(node.state === "offline" ? `X ${node.id}` : `${node.id}`, 128, 66);
+        context.fillText(`${node.id}`, 128, 66);
+        if (node.state === "offline") {
+          context.strokeStyle = "#ff4f5e";
+          context.lineWidth = 11;
+          context.lineCap = "round";
+          context.beginPath();
+          context.moveTo(42, 24);
+          context.lineTo(214, 106);
+          context.moveTo(214, 24);
+          context.lineTo(42, 106);
+          context.stroke();
+        }
         const texture = new THREE.CanvasTexture(canvas);
         texture.colorSpace = THREE.SRGBColorSpace;
         const label = new THREE.Mesh(
@@ -141,9 +152,9 @@ export default function Dashboard() {
         rack.scale.setScalar(scale);
         const node = nodes[index];
         rack.position.set(
-          (column - 2) * rackWidth - center.x * scale,
+          (column - 2) * (rackWidth + columnGap) - center.x * scale,
           -bounds.min.y * scale,
-          (row - 2.5) * (rackDepth + rowGap) - center.z * scale
+          (row - 2.5) * rackDepth - center.z * scale
         );
         rack.traverse((object) => {
           if (object instanceof THREE.Mesh) {
