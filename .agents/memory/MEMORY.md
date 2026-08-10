@@ -1,0 +1,1 @@
+- [Imported reference build boundary](imported-reference-build.md) — reference apps can fail the root type scan without blocking the runnable Next preview.
