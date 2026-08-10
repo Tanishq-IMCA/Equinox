@@ -5,11 +5,62 @@ import { useRouter } from "next/navigation";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
+import { clusterNodeIds, useSimulation, type LiveTask, type NodeTelemetry } from "./simulation";
 
 const nodes = Array.from({ length: 60 }, (_, i) => ({
   id: i + 1,
   state: [8, 21, 27].includes(i + 1) ? "offline" : i === 7 || i === 18 ? "warning" : i % 4 === 0 ? "ready" : "online",
 }));
+
+function metricTone(value: number) {
+  return value >= 80 ? "critical" : value >= 50 ? "elevated" : "nominal";
+}
+
+function MetricBar({ label, value, unit = "%" }: { label: string; value: number; unit?: string }) {
+  const tone = metricTone(value);
+  return <div className="telemetry-metric">
+    <div className="telemetry-metric-head"><span>{label}</span><b className={tone}>{value.toFixed(1)}{unit}</b></div>
+    <div className={`telemetry-bar ${tone}`}><i style={{ width: `${Math.min(100, value)}%` }} /></div>
+  </div>;
+}
+
+function TaskRow({ task, nodeId, onTerminate }: { task: LiveTask; nodeId: number; onTerminate: (nodeId: number, uid: string) => void }) {
+  return <div className={`task-row ${task.state === "terminating" ? "is-terminating" : ""}`}>
+    <div className="task-row-main"><b>{task.name}</b><span>{task.category} / {task.intensity}</span></div>
+    <span className="task-time">{task.state === "terminating" ? "TRANSFERRING" : `${task.remaining}s`}</span>
+    <button className="terminate-button" onClick={() => onTerminate(nodeId, task.uid)} disabled={task.state === "terminating"}>{task.state === "terminating" ? "WAIT" : "TERMINATE"}</button>
+  </div>;
+}
+
+function TelemetryPanel({ telemetry, onTerminate, compact = false }: { telemetry: NodeTelemetry; onTerminate: (nodeId: number, uid: string) => void; compact?: boolean }) {
+  return <div className={`telemetry-panel glass ${compact ? "is-compact" : ""}`}>
+    <div className="telemetry-panel-kicker">NODE {String(telemetry.id).padStart(2, "0")} / CLUSTER {String(telemetry.cluster + 1).padStart(2, "0")}</div>
+    <div className="telemetry-panel-title"><h2>NODE TELEMETRY</h2><span className={`telemetry-state ${telemetry.state}`}>{telemetry.state}</span></div>
+    <div className="telemetry-metrics">
+      <MetricBar label="CPU" value={telemetry.cpu} />
+      <MetricBar label="GPU" value={telemetry.gpu} />
+      <MetricBar label="RAM" value={telemetry.ram} />
+      <MetricBar label="VRAM" value={telemetry.gpuMemory} />
+      <MetricBar label="POWER" value={telemetry.power} />
+      <MetricBar label="TEMP" value={telemetry.temperature} unit="°" />
+    </div>
+    <div className="process-heading"><span>PROCESSES</span><b>{telemetry.tasks.length} ACTIVE</b></div>
+    <div className="process-list">{telemetry.tasks.slice(0, compact ? 4 : 8).map((task) => <TaskRow key={task.uid} task={task} nodeId={telemetry.id} onTerminate={onTerminate} />)}</div>
+  </div>;
+}
+
+function ClusterPanel({ cluster, telemetry, onTerminate }: { cluster: number; telemetry: NodeTelemetry[]; onTerminate: (nodeId: number, uid: string) => void }) {
+  const clusterNodes = telemetry.filter((node) => node.cluster === cluster);
+  const tasks = clusterNodes.flatMap((node) => node.tasks.map((task) => ({ task, nodeId: node.id })));
+  return <div className="cluster-panel glass">
+    <div className="cluster-panel-head">
+      <div><span className="telemetry-panel-kicker">CLUSTER {String(cluster + 1).padStart(2, "0")} / ISOLATED TASK DOMAIN</span><h2>CLUSTER TASK MANAGER</h2></div>
+      <span className="cluster-capacity">{tasks.length} PROCESSES / {clusterNodes.reduce((sum, node) => sum + node.power, 0).toFixed(0)}% POWER</span>
+    </div>
+    <div className="cluster-server-strip">{clusterNodes.map((node) => <div className="cluster-server" key={node.id}><span>NODE {String(node.id).padStart(2, "0")}</span><b>{node.tasks.length}</b><i className={metricTone(Math.max(node.cpu, node.ram, node.gpu, node.power))} /></div>)}</div>
+    <div className="cluster-task-list">{tasks.slice(0, 12).map(({ task, nodeId }) => <TaskRow key={task.uid} task={task} nodeId={nodeId} onTerminate={onTerminate} />)}</div>
+  </div>;
+}
 
 export default function Dashboard() {
   const router = useRouter();
@@ -17,7 +68,10 @@ export default function Dashboard() {
   const [page, setPage] = useState("Overview");
   const [visiblePage, setVisiblePage] = useState("Overview");
   const [switching, setSwitching] = useState(false);
+  const [hoveredNode, setHoveredNode] = useState<number | null>(null);
+  const [selectedCluster, setSelectedCluster] = useState(5);
   const sceneHost = useRef<HTMLDivElement>(null);
+  const { telemetry, logs, notice, terminateTask } = useSimulation();
 
   useEffect(() => {
     if (localStorage.getItem("equinox-auth") !== "active") router.replace("/login");
@@ -45,7 +99,15 @@ export default function Dashboard() {
     camera.position.set(29, 17, 32);
     camera.lookAt(0, 0.8, 0);
 
-    const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
+    let renderer: THREE.WebGLRenderer;
+    try {
+      renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
+    } catch {
+      host.innerHTML = '<div class="scene-fallback"><span>3D ROOM VIEW UNAVAILABLE</span><small>LIVE TELEMETRY PANELS REMAIN ACTIVE</small></div>';
+      return () => {
+        host.innerHTML = "";
+      };
+    }
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -119,6 +181,9 @@ export default function Dashboard() {
     let animationFrame = 0;
     let disposed = false;
     const powerPulses: { mesh: THREE.Mesh; curve: THREE.CatmullRomCurve3; offset: number }[] = [];
+    const rackRoots: THREE.Object3D[] = [];
+    const raycaster = new THREE.Raycaster();
+    const pointer = new THREE.Vector2();
     const loader = new GLTFLoader();
     loader.load("/data_center_rack.glb", (gltf) => {
       if (disposed) return;
@@ -181,6 +246,8 @@ export default function Dashboard() {
         const row = Math.floor(index / 6);
         rack.scale.setScalar(scale);
         const node = nodes[index];
+        rack.userData.nodeId = node.id;
+        rackRoots.push(rack);
         rack.position.set(
           (column - 2.5) * (rackWidth + columnGap) - center.x * scale,
           -bounds.min.y * scale,
@@ -280,6 +347,26 @@ export default function Dashboard() {
       });
     });
 
+    const handlePointerMove = (event: PointerEvent) => {
+      const bounds = renderer.domElement.getBoundingClientRect();
+      pointer.x = ((event.clientX - bounds.left) / bounds.width) * 2 - 1;
+      pointer.y = -((event.clientY - bounds.top) / bounds.height) * 2 + 1;
+      raycaster.setFromCamera(pointer, camera);
+      const hit = raycaster.intersectObjects(rackRoots, true)[0]?.object;
+      let cursor: THREE.Object3D | null = hit ?? null;
+      let id: number | null = null;
+      while (cursor) {
+        if (typeof cursor.userData.nodeId === "number") {
+          id = cursor.userData.nodeId;
+          break;
+        }
+        cursor = cursor.parent;
+      }
+      setHoveredNode(id);
+    };
+    renderer.domElement.addEventListener("pointermove", handlePointerMove);
+    renderer.domElement.addEventListener("pointerleave", () => setHoveredNode(null));
+
     const resize = () => {
       const width = host.clientWidth;
       const height = host.clientHeight;
@@ -309,6 +396,7 @@ export default function Dashboard() {
       window.cancelAnimationFrame(animationFrame);
       resizeObserver.disconnect();
       controls.dispose();
+      renderer.domElement.removeEventListener("pointermove", handlePointerMove);
       renderer.dispose();
       renderer.domElement.remove();
       scene.traverse((object) => {
@@ -321,6 +409,7 @@ export default function Dashboard() {
     };
   }, [visiblePage]);
 
+  const hoveredTelemetry = hoveredNode ? telemetry.find((node) => node.id === hoveredNode) : null;
   return <main className="dashboard">
     <div className="wallpaper"><i /><i /><i /><i /><i /></div>
     <header className="dashboard-header">
@@ -338,15 +427,18 @@ export default function Dashboard() {
     <section className={`dashboard-content ${switching ? "is-switching" : ""}`}>
       {visiblePage === "Overview" && <div className="overview-page">
         <div className="dashboard-intro"><p className="eyebrow">AUTONOMOUS ENERGY SYSTEMS / 02</p><h1>CLUSTER <span className="accent">OVERVIEW.</span></h1><p>Thirty nodes. One adaptive system. Watch workload migration, thermal awareness, and power efficiency in real time.</p></div>
-        <div className="overview-tools"><span className="room-status"><i /> ROOM A / 30 NODES</span><span>DRAG TO ROTATE</span><span>SCROLL TO ZOOM</span></div>
+         <div className="overview-tools"><span className="room-status"><i /> ROOM A / 60 NODES</span><span>HOVER A RACK FOR TELEMETRY</span><span>DRAG TO ROTATE</span><span>SCROLL TO ZOOM</span></div>
         <div className="rack-window glass">
           <div className="window-top"><span className="dot red" /><span className="dot yellow" /><span className="dot green" /><span className="window-label">LIVE NODE TELEMETRY / STANDBY</span></div>
-          <div className="room-viewport"><div className="rack-canvas-host" ref={sceneHost} /></div>
+           <div className="room-viewport"><div className="rack-canvas-host" ref={sceneHost} />{hoveredTelemetry && <div className="hover-telemetry"><TelemetryPanel telemetry={hoveredTelemetry} onTerminate={terminateTask} compact /></div>}</div>
         </div>
         <div className="room-legend"><span><i className="legend-online" /> ACTIVE</span><span><i className="legend-ready" /> READY</span><span><i className="legend-warning" /> MIGRATING</span><span><i className="legend-offline" /> OFFLINE / LIGHTS OFF</span></div>
+         <div className="cluster-tabs">{Array.from({ length: 6 }, (_, cluster) => <button key={cluster} className={selectedCluster === cluster ? "active" : ""} onClick={() => setSelectedCluster(cluster)}>CLUSTER {String(cluster + 1).padStart(2, "0")} <small>{clusterNodeIds(cluster).join(" · ")}</small></button>)}</div>
+         <ClusterPanel cluster={selectedCluster} telemetry={telemetry} onTerminate={terminateTask} />
+         {notice && <div className="telemetry-notice" role="status">{notice}</div>}
       </div>}
       {visiblePage === "Live Workflow" && <div className="empty-page"><p className="eyebrow">WORKSPACE / 02</p><h1>LIVE<br /><span className="accent">WORKFLOW.</span></h1><p>Workflow stream will appear here when the live data connection is enabled.</p></div>}
-      {visiblePage === "Logs" && <div className="empty-page"><p className="eyebrow">WORKSPACE / 03</p><h1>SYSTEM<br /><span className="accent">LOGS.</span></h1><p>Event history is intentionally empty for this preview.</p></div>}
+       {visiblePage === "Logs" && <div className="logs-page"><p className="eyebrow">WORKSPACE / 03</p><h1>SYSTEM<br /><span className="accent">LOGS.</span></h1><div className="logs-panel glass">{logs.map((log, index) => <div className="log-row" key={`${log.time}-${index}`}><time>{log.time}</time><b>{log.kind}</b><span>{log.message}</span></div>)}</div></div>}
     </section>
   </main>;
 }
