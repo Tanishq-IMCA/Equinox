@@ -49,7 +49,7 @@ const fallbackTasks: TaskTemplate[] = [
   { id: "WEB-001", category: "General tasks", name: "Microsoft Edge worker", intensity: "Low", cpu: 4, ram: 800, gpu: 4, gpuMemory: 400, power: 19, temperature: 41 },
 ];
 
-type RuntimeNode = { id: number; tasks: LiveTask[]; offline: boolean };
+type RuntimeNode = { id: number; tasks: LiveTask[]; offline: boolean; powerAction?: "starting" | "stopping" };
 
 const clamp = (value: number, min = 0, max = 100) => Math.min(max, Math.max(min, value));
 const average = (items: number[]) => items.length ? items.reduce((sum, value) => sum + value, 0) / items.length : 0;
@@ -119,6 +119,7 @@ export function useSimulation() {
   })));
   const catalog = useRef<TaskTemplate[]>([]);
   const sequence = useRef(0);
+  const powerTimers = useRef<number[]>([]);
   const [, redraw] = useState(0);
   const [logs, setLogs] = useState<SimulationLog[]>([{ time: nowLabel(), kind: "ENGINE", message: "Telemetry engine initialized across six isolated clusters." }]);
   const [notice, setNotice] = useState("");
@@ -164,12 +165,22 @@ export function useSimulation() {
       redraw((value) => value + 1);
     }, 1000);
     const intake = window.setInterval(() => addLog("ENGINE", "Cluster intake cycle evaluated against the 80% operating envelope."), 10000);
-    return () => { window.clearInterval(interval); window.clearInterval(intake); };
+    return () => {
+      window.clearInterval(interval);
+      window.clearInterval(intake);
+      powerTimers.current.forEach((timer) => window.clearTimeout(timer));
+    };
   }, []);
 
   const telemetry = runtime.current.map((node): NodeTelemetry => {
     const values = metrics(node);
-    return { id: node.id, cluster: clusterForNode(node.id), state: node.offline ? "offline" : node.tasks.length ? "online" : "ready", ...values, tasks: node.tasks };
+    return {
+      id: node.id,
+      cluster: clusterForNode(node.id),
+      state: node.powerAction ?? (node.offline ? "offline" : node.tasks.length ? "online" : "ready"),
+      ...values,
+      tasks: node.tasks,
+    };
   });
 
   function terminateTask(nodeId: number, uid: string) {
@@ -189,22 +200,39 @@ export function useSimulation() {
     redraw((value) => value + 1);
   }
 
-  function shutdownCluster(cluster: number) {
-    const targets = runtime.current.filter((node) => clusterForNode(node.id) === cluster && !node.offline);
+  function powerCluster(cluster: number) {
+    const targets = runtime.current.filter((node) => clusterForNode(node.id) === cluster);
+    const shouldStart = targets.some((node) => node.offline && !node.powerAction);
     if (!targets.length) {
-      setNotice(`Cluster ${String(cluster + 1).padStart(2, "0")} is already offline.`);
+      setNotice(`Cluster ${String(cluster + 1).padStart(2, "0")} has no nodes.`);
       window.setTimeout(() => setNotice(""), 5200);
       return;
     }
-    targets.forEach((node) => {
-      node.offline = true;
-      node.tasks = [];
+    targets.forEach((node, index) => {
+      if (node.powerAction || (shouldStart ? !node.offline : node.offline)) return;
+      node.powerAction = shouldStart ? "starting" : "stopping";
+      const timer = window.setTimeout(() => {
+        if (shouldStart) {
+          node.offline = false;
+          node.powerAction = undefined;
+          addLog("POWER", `Node ${node.id} started in Cluster ${String(cluster + 1).padStart(2, "0")}.`);
+        } else {
+          node.offline = true;
+          node.tasks = [];
+          node.powerAction = undefined;
+          addLog("POWER", `Node ${node.id} shut down in Cluster ${String(cluster + 1).padStart(2, "0")}.`);
+        }
+        redraw((value) => value + 1);
+      }, index * 500);
+      powerTimers.current.push(timer);
     });
-    setNotice(`Cluster ${String(cluster + 1).padStart(2, "0")} powered down. Rack lights disabled.`);
-    addLog("POWER", `Emergency shutdown completed for Cluster ${String(cluster + 1).padStart(2, "0")}.`);
+    setNotice(shouldStart
+      ? `Cluster ${String(cluster + 1).padStart(2, "0")} starting nodes one by one.`
+      : `Cluster ${String(cluster + 1).padStart(2, "0")} powering down nodes one by one.`);
+    addLog("POWER", `${shouldStart ? "Starting" : "Shutting down"} Cluster ${String(cluster + 1).padStart(2, "0")} sequentially.`);
     redraw((value) => value + 1);
     window.setTimeout(() => setNotice(""), 5200);
   }
 
-  return { telemetry, logs, notice, terminateTask, shutdownCluster };
+  return { telemetry, logs, notice, terminateTask, powerCluster };
 }

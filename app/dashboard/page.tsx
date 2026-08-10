@@ -88,10 +88,11 @@ export default function Dashboard() {
   const [visiblePage, setVisiblePage] = useState("Overview");
   const [switching, setSwitching] = useState(false);
   const [hoveredNode, setHoveredNode] = useState<number | null>(null);
+  const [selectedNode, setSelectedNode] = useState<number | null>(null);
   const [selectedCluster, setSelectedCluster] = useState(5);
   const [shutdownNotice, setShutdownNotice] = useState("");
   const sceneHost = useRef<HTMLDivElement>(null);
-  const { telemetry, logs, notice, terminateTask, shutdownCluster } = useSimulation();
+  const { telemetry, logs, notice, terminateTask, powerCluster } = useSimulation();
   const telemetryRef = useRef(telemetry);
   telemetryRef.current = telemetry;
   const selectedClusterNodes = telemetry.filter((node) => node.cluster === selectedCluster);
@@ -203,16 +204,21 @@ export default function Dashboard() {
       depthWrite: false,
     });
     const powerLineRadius = 0.055;
-    const addPowerLine = (points: THREE.Vector3[]) => {
+    const powerLines: { line: THREE.Mesh; cluster: number | null }[] = [];
+    const addPowerLine = (points: THREE.Vector3[], cluster: number | null = null) => {
       const curve = new THREE.CatmullRomCurve3(points);
-      const line = new THREE.Mesh(new THREE.TubeGeometry(curve, Math.max(points.length * 8, 12), powerLineRadius, 6, false), neonMaterial);
+      const line = new THREE.Mesh(
+        new THREE.TubeGeometry(curve, Math.max(points.length * 8, 12), powerLineRadius, 6, false),
+        neonMaterial.clone()
+      );
+      powerLines.push({ line, cluster });
       scene.add(line);
       return curve;
     };
 
     let animationFrame = 0;
     let disposed = false;
-    const powerPulses: { mesh: THREE.Mesh; curve: THREE.CatmullRomCurve3; offset: number }[] = [];
+    const powerPulses: { mesh: THREE.Mesh; curve: THREE.CatmullRomCurve3; offset: number; cluster: number | null }[] = [];
     const rackRoots: THREE.Object3D[] = [];
     const rackVisuals: { id: number; rack: THREE.Object3D; label: THREE.Mesh | null; state: string }[] = [];
     const syncRackVisual = (visual: typeof rackVisuals[number], state: string) => {
@@ -238,7 +244,7 @@ export default function Dashboard() {
         const canvas = visual.label.userData.labelCanvas as HTMLCanvasElement;
         const context = canvas.getContext("2d");
         if (context) {
-          const color = { online: "#42f59b", ready: "#ffd34f", warning: "#ff5f67", offline: "#b2bdc4" }[state] ?? "#b2bdc4";
+          const color = { online: "#42f59b", ready: "#ffd34f", warning: "#ff5f67", starting: "#42f59b", stopping: "#ff5f67", offline: "#b2bdc4" }[state] ?? "#b2bdc4";
           context.clearRect(0, 0, canvas.width, canvas.height);
           context.fillStyle = "rgba(18,25,30,.78)";
           context.fillRect(7, 7, 242, 114);
@@ -376,15 +382,15 @@ export default function Dashboard() {
         addPowerLine([
           new THREE.Vector3(x - tapeWidth / 2, 0.035, gridFrontZ),
           new THREE.Vector3(x - tapeWidth / 2, 0.035, gridBackZ),
-        ]);
+        ], column);
         addPowerLine([
           new THREE.Vector3(x + tapeWidth / 2, 0.035, gridFrontZ),
           new THREE.Vector3(x + tapeWidth / 2, 0.035, gridBackZ),
-        ]);
+        ], column);
         addPowerLine([
           new THREE.Vector3(x, 0.04, gridBackZ),
           new THREE.Vector3(x, 0.04, spineZ),
-        ]);
+        ], column);
       }
       addPowerLine([
         new THREE.Vector3(rackXPositions[0], 0.045, spineZ),
@@ -430,7 +436,7 @@ export default function Dashboard() {
           });
           const particle = new THREE.Mesh(new THREE.BoxGeometry(powerLineRadius * 2, powerLineRadius * 2, powerLineRadius * 2), pulseMaterial);
           scene.add(particle);
-          powerPulses.push({ mesh: particle, curve: route, offset: index / 3 });
+           powerPulses.push({ mesh: particle, curve: route, offset: index / 3, cluster: 0 });
         });
       });
     });
@@ -452,7 +458,23 @@ export default function Dashboard() {
       }
       setHoveredNode(id);
     };
+    const handlePointerDown = (event: PointerEvent) => {
+      const bounds = renderer.domElement.getBoundingClientRect();
+      pointer.x = ((event.clientX - bounds.left) / bounds.width) * 2 - 1;
+      pointer.y = -((event.clientY - bounds.top) / bounds.height) * 2 + 1;
+      raycaster.setFromCamera(pointer, camera);
+      const hit = raycaster.intersectObjects(rackRoots, true)[0]?.object;
+      let cursor: THREE.Object3D | null = hit ?? null;
+      while (cursor) {
+        if (typeof cursor.userData.nodeId === "number") {
+          setSelectedNode(cursor.userData.nodeId);
+          return;
+        }
+        cursor = cursor.parent;
+      }
+    };
     renderer.domElement.addEventListener("pointermove", handlePointerMove);
+    renderer.domElement.addEventListener("pointerdown", handlePointerDown);
     renderer.domElement.addEventListener("pointerleave", () => setHoveredNode(null));
 
     const resize = () => {
@@ -472,8 +494,19 @@ export default function Dashboard() {
           const liveNode = telemetryRef.current.find((node) => node.id === visual.id);
           syncRackVisual(visual, liveNode?.state ?? nodes[visual.id - 1].state);
         });
+        powerLines.forEach(({ line, cluster }) => {
+          const clusterNodes = telemetryRef.current.filter((node) => node.cluster === cluster);
+          const activeRatio = cluster === null
+            ? 1
+            : clusterNodes.filter((node) => node.state !== "offline" && node.state !== "stopping").length / Math.max(clusterNodes.length, 1);
+          (line.material as THREE.MeshBasicMaterial).opacity = 0.92 * activeRatio;
+          line.visible = activeRatio > 0;
+        });
       controls.update();
-      powerPulses.forEach(({ mesh, curve, offset }) => {
+      powerPulses.forEach(({ mesh, curve, offset, cluster }) => {
+        const clusterNodes = cluster === null ? [] : telemetryRef.current.filter((node) => node.cluster === cluster);
+        const active = cluster === null || clusterNodes.some((node) => node.state !== "offline" && node.state !== "stopping");
+        mesh.visible = active;
         const t = ((performance.now() * 0.00028 + offset) % 1);
         mesh.position.copy(curve.getPointAt(t));
         mesh.rotation.y += 0.035;
@@ -489,6 +522,7 @@ export default function Dashboard() {
       resizeObserver.disconnect();
       controls.dispose();
       renderer.domElement.removeEventListener("pointermove", handlePointerMove);
+      renderer.domElement.removeEventListener("pointerdown", handlePointerDown);
       renderer.dispose();
       renderer.domElement.remove();
       scene.traverse((object) => {
@@ -501,7 +535,8 @@ export default function Dashboard() {
     };
   }, [visiblePage]);
 
-  const hoveredTelemetry = hoveredNode ? telemetry.find((node) => node.id === hoveredNode) : null;
+  const activeNode = selectedNode ?? hoveredNode;
+  const hoveredTelemetry = activeNode ? telemetry.find((node) => node.id === activeNode) : null;
   return <main className="dashboard">
     <div className="wallpaper"><i /><i /><i /><i /><i /></div>
     <header className="dashboard-header">
@@ -522,12 +557,12 @@ export default function Dashboard() {
          <div className="overview-tools"><span className="room-status"><i /> ROOM A / 60 NODES</span><span>HOVER A RACK FOR TELEMETRY</span><span>DRAG TO ROTATE</span><span>SCROLL TO ZOOM</span></div>
         <div className="rack-window glass">
           <div className="window-top"><span className="dot red" /><span className="dot yellow" /><span className="dot green" /><span className="window-label">LIVE NODE TELEMETRY / STANDBY</span></div>
-           <div className="room-viewport"><div className="rack-canvas-host" ref={sceneHost} />{hoveredTelemetry && <div className="hover-telemetry"><TelemetryPanel telemetry={hoveredTelemetry} onTerminate={terminateTask} compact /></div>}</div>
+           <div className="room-viewport"><div className="rack-canvas-host" ref={sceneHost} />{hoveredTelemetry && <div className="hover-telemetry" onPointerDown={(event) => event.stopPropagation()}><TelemetryPanel telemetry={hoveredTelemetry} onTerminate={terminateTask} compact /></div>}</div>
         </div>
         <div className="room-legend"><span><i className="legend-online" /> ACTIVE</span><span><i className="legend-ready" /> READY</span><span><i className="legend-warning" /> MIGRATING</span><span><i className="legend-offline" /> OFFLINE / LIGHTS OFF</span></div>
          <div className="cluster-tabs">{Array.from({ length: 6 }, (_, cluster) => <button key={cluster} className={selectedCluster === cluster ? "active" : ""} onClick={() => setSelectedCluster(cluster)}>CLUSTER {String(cluster + 1).padStart(2, "0")} <small>{clusterNodeIds(cluster).join(" · ")}</small></button>)}</div>
          <div className="cluster-overview-card glass">
-            <div className="cluster-overview-head"><div><span className="telemetry-panel-kicker">CLUSTER {String(selectedCluster + 1).padStart(2, "0")} / COMBINED TELEMETRY</span><h2>CLUSTER STATUS</h2></div><button className="emergency-button" onClick={() => { shutdownCluster(selectedCluster); setShutdownNotice(`Emergency shutdown completed for Cluster ${String(selectedCluster + 1).padStart(2, "0")}. Rack lights disabled.`); }}>EMERGENCY SHUTDOWN</button></div>
+             <div className="cluster-overview-head"><div><span className="telemetry-panel-kicker">CLUSTER {String(selectedCluster + 1).padStart(2, "0")} / COMBINED TELEMETRY</span><h2>CLUSTER STATUS</h2></div><button className="emergency-button" onClick={() => powerCluster(selectedCluster)}>POWER {selectedClusterNodes.every((node) => node.state === "offline") ? "UP" : "DOWN"} / SEQUENTIAL</button></div>
            <div className="cluster-overview-metrics">
               <MetricBar label="CPU" value={clusterTotals.cpu / 10} valueText={clusterDisplay.cpu} />
               <MetricBar label="GPU" value={clusterTotals.gpu / 10} valueText={clusterDisplay.gpu} />
