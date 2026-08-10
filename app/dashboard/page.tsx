@@ -77,29 +77,29 @@ export default function Dashboard() {
     scene.add(rimLight);
 
     const floor = new THREE.Mesh(
-      new THREE.PlaneGeometry(24, 42),
+      new THREE.PlaneGeometry(16, 32),
       new THREE.MeshStandardMaterial({ color: "#252b30", roughness: 0.86, metalness: 0.12 })
     );
     floor.rotation.x = -Math.PI / 2;
     floor.receiveShadow = false;
     scene.add(floor);
-    const grid = new THREE.GridHelper(24, 42, "#566067", "#40484e");
+    const grid = new THREE.GridHelper(16, 32, "#566067", "#40484e");
     grid.position.y = 0.012;
     grid.material.transparent = true;
     grid.material.opacity = 0.42;
     scene.add(grid);
 
     const sideWall = new THREE.Mesh(
-      new THREE.BoxGeometry(0.22, 4.8, 42),
+      new THREE.BoxGeometry(0.22, 3.4, 32),
       new THREE.MeshStandardMaterial({ color: "#1a2025", roughness: 0.92, metalness: 0.08 })
     );
-    sideWall.position.set(-12, 2.4, 0);
+    sideWall.position.set(-8, 1.7, 0);
     scene.add(sideWall);
     const endWall = new THREE.Mesh(
-      new THREE.BoxGeometry(24, 4.8, 0.22),
+      new THREE.BoxGeometry(16, 3.4, 0.22),
       new THREE.MeshStandardMaterial({ color: "#181e23", roughness: 0.92, metalness: 0.08 })
     );
-    endWall.position.set(0, 2.4, 21);
+    endWall.position.set(0, 1.7, 16);
     scene.add(endWall);
 
     const neonMaterial = new THREE.LineBasicMaterial({
@@ -116,6 +116,7 @@ export default function Dashboard() {
 
     let animationFrame = 0;
     let disposed = false;
+    const powerPulses: { mesh: THREE.Mesh; curve: THREE.CatmullRomCurve3; offset: number }[] = [];
     const loader = new GLTFLoader();
     loader.load("/data_center_rack.glb", (gltf) => {
       if (disposed) return;
@@ -209,7 +210,7 @@ export default function Dashboard() {
       );
       const gridBackZ = rackOriginZ + 5 * (rackDepth + rowGap) + 0.3;
       const gridFrontZ = rackOriginZ - 5 * (rackDepth + rowGap) - 0.3;
-      const spineZ = 21.8;
+      const spineZ = 14.4;
       const tapeDepth = Math.max(rackDepth * 0.82, 0.5);
       const tapeWidth = Math.max(rackWidth * 0.72, 0.5);
 
@@ -234,8 +235,7 @@ export default function Dashboard() {
       ]);
       addPowerLine([
         new THREE.Vector3(rackXPositions[0], 0.05, spineZ),
-        new THREE.Vector3(-11.55, 0.05, spineZ),
-        new THREE.Vector3(-11.55, 2.35, spineZ),
+        new THREE.Vector3(-7.55, 0.05, spineZ),
       ]);
 
       const powerwallLoader = new GLTFLoader();
@@ -243,12 +243,12 @@ export default function Dashboard() {
         if (disposed) return;
         const powerwallBounds = new THREE.Box3().setFromObject(powerwallGltf.scene);
         const powerwallSize = powerwallBounds.getSize(new THREE.Vector3());
-        const powerwallScale = 2.15 / Math.max(powerwallSize.y, 0.001);
-        [15.5, 18.2, 20.9].forEach((z, index) => {
+        const powerwallScale = 1.7 / Math.max(powerwallSize.y, 0.001);
+        [15.2, 16.45, 17.7].forEach((z, index) => {
           const powerwall = powerwallGltf.scene.clone(true);
           powerwall.scale.setScalar(powerwallScale);
           powerwall.rotation.y = Math.PI / 2;
-          powerwall.position.set(-11.5, 1.65, z);
+          powerwall.position.set(-7.55, 1.3, z);
           powerwall.traverse((object) => {
             if (object instanceof THREE.Mesh) {
               object.castShadow = true;
@@ -258,15 +258,24 @@ export default function Dashboard() {
           });
           scene.add(powerwall);
           addPowerLine([
-            new THREE.Vector3(-11.55, 0.05, z),
-            new THREE.Vector3(-11.55, 0.05, spineZ),
+            new THREE.Vector3(-7.55, 0.05, z),
+            new THREE.Vector3(-7.55, 0.05, spineZ),
           ]);
-          if (index === 0) {
-            addPowerLine([
-              new THREE.Vector3(-11.55, 0.05, z),
-              new THREE.Vector3(-11.55, 2.25, z),
-            ]);
-          }
+          const pulseMaterial = new THREE.MeshBasicMaterial({
+            color: "#b6fff0",
+            transparent: true,
+            opacity: 0.95,
+          });
+          const curve = new THREE.CatmullRomCurve3([
+            new THREE.Vector3(-7.35, 0.16, z),
+            new THREE.Vector3(-7.0, 0.16, z),
+            new THREE.Vector3(-6.6, 0.16, spineZ),
+            new THREE.Vector3(rackXPositions[0], 0.16, spineZ),
+          ]);
+          const pulse = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.12, 0.22), pulseMaterial);
+          pulse.userData.powerCurve = curve;
+          scene.add(pulse);
+          powerPulses.push({ mesh: pulse, curve, offset: index / 3 });
         });
       });
     });
@@ -285,6 +294,11 @@ export default function Dashboard() {
     const render = () => {
       if (disposed) return;
       controls.update();
+      powerPulses.forEach(({ mesh, curve, offset }) => {
+        const t = ((performance.now() * 0.00028 + offset) % 1);
+        mesh.position.copy(curve.getPointAt(t));
+        mesh.rotation.y += 0.035;
+      });
       renderer.render(scene, camera);
       animationFrame = window.requestAnimationFrame(render);
     };
