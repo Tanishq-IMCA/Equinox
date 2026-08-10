@@ -1,0 +1,106 @@
+/* IMCA Nexus Styles: glass.css */
+/* IMCA NEXUS: GLASSMORPHISM ENGINE */
+/* Based on iOS 18 / VisionOS Standards */
+
+:root {
+    /* The Palette: Change these to tweak the entire system */
+    --glass-bg-primary: rgba(20, 20, 20, 0.65);
+    --glass-bg-secondary: rgba(255, 255, 255, 0.03);
+    --glass-border: rgba(255, 255, 255, 0.08);
+    --glass-highlight: rgba(255, 255, 255, 0.15);
+    --glass-blur: 24px;
+    --neon-accent: #00f2ff; /* Cyberpunk Blue default */
+}
+
+/* --- THE BASE GLASS CLASS --- */
+/* Apply this to any div to make it look like a frosted panel */
+.glass {
+    background: var(--glass-bg-primary);
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur)); /* Safari Support */
+    border: 1px solid var(--glass-border);
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5); /* Deep shadow for depth */
+}
+
+/* --- SPECIFIC COMPONENTS --- */
+
+/* 1. The Main Dashboard Cards */
+.glass-card {
+    background: linear-gradient(
+        135deg,
+        rgba(255, 255, 255, 0.05) 0%,
+        rgba(255, 255, 255, 0.01) 100%
+    );
+    backdrop-filter: blur(40px);
+    -webkit-backdrop-filter: blur(40px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-top: 1px solid rgba(255, 255, 255, 0.2); /* Top light catch */
+    border-radius: 24px;
+    padding: 24px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.glass-card:hover {
+    transform: translateY(-5px); /* Float up effect */
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+    border-color: var(--glass-highlight);
+}
+
+/* 2. Interactive Buttons */
+.glass-btn {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: white;
+    padding: 12px 24px;
+    border-radius: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    backdrop-filter: blur(10px);
+    transition: all 0.2s ease;
+}
+
+.glass-btn:hover {
+    background: rgba(255, 255, 255, 0.15);
+    box-shadow: 0 0 15px var(--glass-highlight);
+}
+
+.glass-btn:active {
+    transform: scale(0.98);
+}
+
+/* 3. Inputs (Finance/Tasks) */
+.glass-input {
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    color: white;
+    padding: 12px;
+    width: 100%;
+    outline: none;
+    font-family: 'Inter', sans-serif;
+}
+
+.glass-input:focus {
+    border-color: var(--neon-accent);
+    box-shadow: 0 0 10px rgba(0, 242, 255, 0.2);
+}
+
+/* --- UTILITIES --- */
+
+/* Text Gradient Effect (for CEO Titles) */
+.text-gradient {
+    background: linear-gradient(90deg, #ffffff 0%, #a0a0a0 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* The "Glow" Animation for urgent tasks */
+@keyframes pulse-glow {
+    0% { box-shadow: 0 0 0 0 rgba(0, 242, 255, 0.4); }
+    70% { box-shadow: 0 0 0 10px rgba(0, 242, 255, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(0, 242, 255, 0); }
+}
+
+.alert-glow {
+    animation: pulse-glow 2s infinite;
+}

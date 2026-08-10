@@ -1,0 +1,311 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AURA Health Arena - Onboarding</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dial.css') }}">
+    <style>
+        @font-face {
+            font-family: 'Pasajero';
+            src: url("{{ url_for('static', filename='fonts/Pasajero.otf') }}");
+        }
+
+        @font-face {
+            font-family: 'Bourgeois';
+            src: url("{{ url_for('static', filename='fonts/Bourgeois-Book.otf') }}");
+        }
+
+        #dial-container {
+            opacity: 0;
+            pointer-events: none;
+            transition: all 1.5s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+        #dial-container.visible {
+            opacity: 1 !important;
+        }
+        #dial-container.moved-right {
+            left: 75% !important;
+            transform: translate(-50%, -50%) !important;
+        }
+        #oobe-left-panel {
+            opacity: 0;
+            transition: opacity 0.8s ease;
+        }
+        #oobe-left-panel.active {
+            opacity: 1;
+        }
+
+        /* Gemini-style gradient text animation */
+        .gemini-text {
+            display: inline-block;
+            background: linear-gradient(90deg, #001eff, #00ff42, #001eff);
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            color: #fff;
+            animation: gemini-gradient 6s linear infinite;
+            font-weight: 900;
+            position: relative;
+            text-shadow: none !important;
+            filter: brightness(1.3) saturate(1.3);
+            -webkit-font-smoothing: antialiased;
+        }
+        .gemini-char {
+            display: inline-block;
+            opacity: 0;
+            animation: gemini-reveal 0.4s cubic-bezier(0, 0, 0.2, 1) forwards;
+            color: inherit;
+            -webkit-text-fill-color: inherit;
+        }
+        @keyframes gemini-reveal {
+            from { 
+                opacity: 0;
+                transform: translateY(4px) scale(0.98);
+            }
+            to { 
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+        @keyframes gemini-gradient {
+            0% { background-position: 0% center; }
+            100% { background-position: 200% center; }
+        }
+    </style>
+</head>
+<body>
+    <div class="background-container"></div>
+    <div class="dark-overlay"></div>
+
+    <div id="oobe-intro" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; z-index: 30; background-color: black; opacity: 1; transition: opacity 1s ease;">
+        <div id="intro-text" style="color: white; font-size: 2.5em; text-align: center; text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);"></div>
+    </div>
+
+    <div id="dial-container" class="dial-container" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 21;">
+        <svg class="dial-svg" viewBox="0 0 200 120" id="dial-svg"></svg>
+        <div class="dial-text-container">
+            <div class="dial-percentage-wrapper">
+                <div id="odometer-strip" class="odometer-strip"></div>
+            </div>
+            <p class="dial-label" style="opacity: 0.8; margin-top: 0.8em;">Your Estimated Stress</p>
+        </div>
+    </div>
+
+    <div id="oobe-sequence" style="visibility: hidden; z-index: 22;">
+        <div id="oobe-content-wrapper">
+            <div id="oobe-left-panel">
+                <div id="dial-intro-step" class="oobe-step" style="color: white; justify-content: center;">
+                    <div class="oobe-title"></div>
+                    <p id="dial-intro-text-low" style="font-size: 1.2rem; min-height: 2em; margin-bottom: 0.5em;"></p>
+                    <p id="dial-intro-text-medium" style="font-size: 1.2rem; min-height: 2em; margin-bottom: 0.5em;"></p>
+                    <p id="dial-intro-text-high" style="font-size: 1.2rem; min-height: 2em; margin-bottom: 0.5em;"></p>
+                    <p id="dial-intro-text-done" style="font-size: 1.2rem; min-height: 2em; margin-bottom: 0.5em; color: var(--accent-color);"></p>
+                </div>
+
+                <div id="oobe-step-2" class="oobe-step glass-panel" style="max-height: 80vh;">
+                    <div class="oobe-title" id="step-2-title"></div>
+                    <div class="oobe-options-ladder" style="opacity: 0; pointer-events: none; transition: opacity 0.5s ease;">
+                        <div class="ladder-btn" onclick="startQnA('Hinduism')">🕉️ Hinduism (Sanātana Dharma)</div>
+                        <div class="ladder-btn" onclick="startQnA('Buddhism')">☸️ Buddhism</div>
+                        <div class="ladder-btn" onclick="startQnA('Jainism')">🪷 Jainism</div>
+                        <div class="ladder-btn" onclick="startQnA('Sikhism')">⚔️ Sikhism</div>
+                        <div class="ladder-btn" onclick="startQnA('Not Religious')">🌿 Not Religious / Prefer Not to Associate</div>
+                    </div>
+                </div>
+
+                <div id="oobe-qna" class="oobe-step glass-panel" style="max-height: 80vh;">
+                    <div id="qna-title" class="oobe-title"></div>
+                    <div id="qna-options" class="oobe-options-ladder" style="opacity: 0; transition: opacity 0.5s ease;">
+                        <!-- Options injected by JS -->
+                    </div>
+                    <div id="qna-progress" class="progress-text">Beginning analysis...</div>
+                </div>
+
+                <div id="oobe-final" class="oobe-step glass-panel" style="text-align: center; justify-content: center; align-items: center; max-height: 80vh;">
+                    <div class="oobe-title">Thank you, <span id="final-name"></span>.</div>
+                    <p id="final-subtext" style="font-family: 'Inter'; opacity: 0.8; margin-bottom: 2em;"></p>
+                    <div class="button-wrap" id="final-btn-wrap" style="opacity: 0; pointer-events: none; transition: opacity 1s ease;">
+                      <button onclick="finishOOBE()">
+                        <span>Enter Sanctuary</span>
+                      </button>
+                      <div class="button-shadow"></div>
+                    </div>
+                </div>
+            </div>
+            <div id="oobe-right-panel">
+            </div>
+        </div>
+    </div>
+
+    <audio id="aura-bg-music" loop preload="auto" playsinline webkit-playsinline></audio>
+    <script src="{{ url_for('static', filename='js/oobe.js') }}"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- GLOBAL MUSIC ENGINE ---
+            const bgMusic = document.getElementById('aura-bg-music');
+            const musicLib = {
+                'Hinduism': { name: 'Vedic Chants', file: "{{ url_for('static', filename='audio/musiclib/hinduism.mp3') }}" },
+                'Buddhism': { name: 'Zen Calm', file: "{{ url_for('static', filename='audio/musiclib/buddhism.mp3') }}" },
+                'Jainism': { name: 'Tirthankar Stuti', file: "{{ url_for('static', filename='audio/musiclib/jainism.mp3') }}" },
+                'Sikhism': { name: 'Gurbani Keertan', file: "{{ url_for('static', filename='audio/musiclib/Sikh.mp3') }}" },
+                'Default': { name: 'Ambient Drift', file: "{{ url_for('static', filename='audio/musiclib/bg.mp3') }}" }
+            };
+
+            let currentReligion = localStorage.getItem('aura_religion') || 'Default';
+            let manualTrack = localStorage.getItem('aura_manual_track');
+            const resumeEvents = ['click', 'keydown', 'touchstart'];
+            let resumeListenersAttached = false;
+
+            bgMusic.preload = 'auto';
+            bgMusic.muted = false;
+            bgMusic.volume = 1;
+            bgMusic.setAttribute('playsinline', '');
+            bgMusic.setAttribute('webkit-playsinline', '');
+
+            function getTargetTrack() {
+                const targetTrackKey = manualTrack || currentReligion;
+                return musicLib[targetTrackKey] || musicLib['Default'];
+            }
+
+            function ensureMusicSource(track) {
+                const absolutePath = new URL(track.file, window.location.origin).href;
+                if (bgMusic.src !== absolutePath) {
+                    bgMusic.src = track.file;
+                    bgMusic.load();
+                }
+            }
+
+            function restoreMusicTime() {
+                const savedTime = Number.parseFloat(localStorage.getItem('aura_music_time') || '');
+                if (!Number.isFinite(savedTime) || savedTime <= 0) {
+                    return;
+                }
+
+                const applySavedTime = () => {
+                    try {
+                        if (Math.abs(bgMusic.currentTime - savedTime) > 1) {
+                            bgMusic.currentTime = savedTime;
+                        }
+                    } catch (error) {
+                        console.log('AURA OOBE music seek skipped.', error);
+                    }
+                };
+
+                if (bgMusic.readyState >= 1) {
+                    applySavedTime();
+                } else {
+                    bgMusic.addEventListener('loadedmetadata', applySavedTime, { once: true });
+                }
+            }
+
+            function removeResumeListeners() {
+                if (!resumeListenersAttached) {
+                    return;
+                }
+
+                resumeEvents.forEach((eventName) => {
+                    document.removeEventListener(eventName, requestMusicResume);
+                });
+                resumeListenersAttached = false;
+            }
+
+            function requestMusicResume() {
+                if (bgMusic.paused) {
+                    playAuraMusic({ force: true });
+                }
+            }
+
+            function addResumeListeners() {
+                if (resumeListenersAttached) {
+                    return;
+                }
+
+                resumeEvents.forEach((eventName) => {
+                    const options = eventName === 'touchstart' ? { passive: true } : undefined;
+                    document.addEventListener(eventName, requestMusicResume, options);
+                });
+                resumeListenersAttached = true;
+            }
+
+            function playAuraMusic(options = {}) {
+                const force = options.force === true;
+                const track = getTargetTrack();
+
+                ensureMusicSource(track);
+                restoreMusicTime();
+
+                const wasPaused = localStorage.getItem('aura_music_paused') === 'true';
+                if (!force && wasPaused) {
+                    return Promise.resolve(false);
+                }
+
+                localStorage.setItem('aura_music_paused', 'false');
+
+                const playPromise = bgMusic.play();
+                if (playPromise && typeof playPromise.then === 'function') {
+                    return playPromise.then(() => {
+                        removeResumeListeners();
+                        return true;
+                    }).catch((error) => {
+                        console.log('AURA OOBE music blocked.', error);
+                        addResumeListeners();
+                        return false;
+                    });
+                }
+
+                const started = !bgMusic.paused;
+                if (started) {
+                    removeResumeListeners();
+                } else {
+                    addResumeListeners();
+                }
+                return Promise.resolve(started);
+            }
+
+            // Persistence before navigation
+            window.addEventListener('beforeunload', () => {
+                localStorage.setItem('aura_music_time', bgMusic.currentTime);
+                localStorage.setItem('aura_music_paused', bgMusic.paused);
+            });
+
+            bgMusic.addEventListener('timeupdate', () => {
+                if (Math.floor(bgMusic.currentTime) % 2 === 0) {
+                    localStorage.setItem('aura_music_time', bgMusic.currentTime);
+                }
+            });
+
+            bgMusic.addEventListener('playing', removeResumeListeners);
+            bgMusic.addEventListener('error', () => {
+                console.log('AURA OOBE music failed to load.', bgMusic.error);
+                addResumeListeners();
+            });
+
+            addResumeListeners();
+            playAuraMusic({ force: true });
+        });
+
+        // --- SERVER RESTART AUTO-REFRESH ---
+        (function() {
+            let lastServerStartTime = null;
+            function checkServerStatus() {
+                fetch('/server_status')
+                    .then(response => response.json())
+                    .then(data => {
+                        if (lastServerStartTime === null) {
+                            lastServerStartTime = data.server_start_time;
+                        } else if (lastServerStartTime !== data.server_start_time) {
+                            console.log('Server restart detected. Reloading...');
+                            window.location.reload();
+                        }
+                    })
+                    .catch(err => {
+                        console.debug('Server status check failed:', err);
+                    });
+            }
+            setInterval(checkServerStatus, 2000);
+        })();
+    </script>
+</body>
+</html>

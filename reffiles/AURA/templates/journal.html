@@ -1,0 +1,597 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+    .journal-container {
+        display: grid;
+        grid-template-columns: 350px 1fr;
+        gap: 30px;
+        height: 75vh;
+        width: 100%;
+        max-width: 1400px;
+    }
+    .entry-list {
+        background: rgba(0,0,0,0.3);
+        border: 1px solid var(--glass-border);
+        border-radius: 15px;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+    }
+    .list-header {
+        padding: 20px;
+        border-bottom: 1px solid var(--glass-border);
+        background: rgba(255,255,255,0.03);
+    }
+    .search-box {
+        background: rgba(255,255,255,0.05);
+        border: 1px solid var(--glass-border);
+        border-radius: 8px;
+        padding: 10px 15px;
+        margin-top: 15px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .search-box input {
+        background: transparent;
+        border: none;
+        color: white;
+        font-size: 0.9rem;
+        outline: none;
+        width: 100%;
+    }
+    .entries-scroll {
+        flex-grow: 1;
+        overflow-y: auto;
+        padding: 15px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+    .entry-card {
+        padding: 18px;
+        background: rgba(255,255,255,0.02);
+        border-radius: 12px;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        border: 1px solid rgba(255,255,255,0.05);
+        position: relative;
+        overflow: hidden;
+    }
+    .entry-card::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        height: 100%;
+        width: 4px;
+        background: var(--accent-color);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    .entry-card:hover {
+        background: rgba(255,255,255,0.07);
+        transform: translateX(5px);
+    }
+    .entry-card.active {
+        background: rgba(255,255,255,0.1);
+        border-color: var(--accent-color);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    }
+    .entry-card.active::before { opacity: 1; }
+
+    .editor-panel {
+        background: rgba(255,255,255,0.01);
+        border: 1px solid var(--glass-border);
+        border-radius: 15px;
+        padding: 40px;
+        display: flex;
+        flex-direction: column;
+        gap: 25px;
+        position: relative;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+    }
+    #journal-textarea {
+        flex-grow: 1;
+        background: transparent;
+        border: none;
+        color: rgba(255,255,255,0.9);
+        font-family: var(--font-body);
+        font-size: 1.2rem;
+        line-height: 1.8;
+        resize: none;
+        outline: none;
+        padding: 10px 0;
+    }
+    .mood-selector {
+        display: flex;
+        gap: 12px;
+    }
+    .mood-btn {
+        width: 45px;
+        height: 45px;
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(255,255,255,0.05);
+        cursor: pointer;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        border: 1px solid rgba(255,255,255,0.1);
+        font-size: 1.1rem;
+        position: relative;
+        overflow: hidden;
+    }
+    .mood-btn::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+            90deg,
+            transparent,
+            rgba(255,255,255,0.2),
+            transparent
+        );
+        transition: all 0.5s ease;
+        z-index: 1;
+    }
+    .mood-btn:hover::before {
+        left: 100%;
+    }
+    .mood-btn:hover {
+        background: rgba(255,255,255,0.1);
+        transform: translateY(-2px);
+        border-color: rgba(255,255,255,0.2);
+    }
+    .mood-btn.selected {
+        background: rgba(255,255,255,0.15);
+        color: white;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2),
+                    inset 0 0 0 1px var(--accent-color);
+        border-color: var(--accent-color);
+    }
+    .mood-btn i {
+        position: relative;
+        z-index: 2;
+    }
+    .meta-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-top: 20px;
+        border-top: 1px solid rgba(255,255,255,0.05);
+        font-size: 0.85rem;
+        color: var(--text-muted);
+    }
+    .ai-analysis-panel {
+        background: linear-gradient(135deg, rgba(74, 222, 128, 0.08) 0%, rgba(79, 172, 254, 0.08) 100%);
+        border: 1px solid var(--accent-color);
+        border-radius: 12px;
+        padding: 20px;
+        margin-top: 20px;
+        display: none;
+        animation: slideUp 0.5s ease;
+    }
+    @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+    .delete-checkbox {
+        appearance: none;
+        width: 18px;
+        height: 18px;
+        border: 1px solid var(--glass-border);
+        border-radius: 4px;
+        background: rgba(255,255,255,0.05);
+        cursor: pointer;
+        position: relative;
+        transition: all 0.2s;
+    }
+    .delete-checkbox:checked {
+        background: #ff4444;
+        border-color: #ff4444;
+    }
+    .delete-checkbox:checked::after {
+        content: '\f00c';
+        font-family: 'Font Awesome 6 Free';
+        font-weight: 900;
+        color: white;
+        font-size: 10px;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+    }
+
+    .bulk-actions {
+        display: none;
+        padding: 15px;
+        border-top: 1px solid var(--glass-border);
+        background: rgba(255, 68, 68, 0.05);
+        animation: fadeIn 0.3s ease;
+    }
+    .bulk-actions.active {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+</style>
+
+<div style="width: 100%; max-width: 1400px; margin-bottom: 30px;">
+    <div class="title-underline-wrapper">
+        <h1 class="reflect-text" data-text="AURA REFLECTIONS" style="font-size: 2.5rem; letter-spacing: 2px; margin-bottom: 0;">AURA REFLECTIONS</h1>
+        <div class="themed-wave-line" style="height: 5px;"></div>
+    </div>
+</div>
+
+<div class="journal-container">
+    <div class="entry-list">
+        <div class="list-header">
+            <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                <button class="glass-btn-sharp" style="flex-grow: 1;" onclick="newEntry()">
+                    <span><i class="fa-solid fa-sparkles" style="margin-right: 8px;"></i> NEW REFLECTION</span>
+                </button>
+                <button class="glass-btn-sharp" style="width: 45px; border-color: rgba(255,255,255,0.1);" onclick="toggleDeleteMode()" title="Delete Multiple">
+                    <span><i class="fa-solid fa-list-check"></i></span>
+                </button>
+            </div>
+            <div class="search-box">
+                <i class="fa-solid fa-magnifying-glass" style="opacity: 0.5;"></i>
+                <input type="text" placeholder="Search insights..." oninput="filterEntries(this.value)">
+            </div>
+        </div>
+        <div class="entries-scroll" id="entries-list">
+            <!-- Entries will be loaded here -->
+        </div>
+        <div class="bulk-actions" id="bulk-actions">
+            <span id="selected-count" style="font-size: 0.8rem; color: var(--text-muted);">0 SELECTED</span>
+            <button class="glass-btn-sharp" style="border-color: #ff4444; color: #ff4444; font-size: 0.8rem;" onclick="deleteSelected()">
+                <span>DELETE SELECTED</span>
+            </button>
+        </div>
+    </div>
+
+    <div class="editor-panel">
+        <div class="save-status" id="save-status">
+            <i class="fa-solid fa-circle-check"></i> COGNITIVE SYNC ACTIVE
+        </div>
+        
+        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+            <div style="flex-grow: 1;">
+                <input type="text" id="entry-title" placeholder="Give your thoughts a name..." style="background: transparent; border: none; color: white; font-family: var(--font-title); font-size: 2.2rem; outline: none; width: 100%; letter-spacing: 1px;">
+                <div style="display: flex; align-items: center; gap: 15px; margin-top: 10px;">
+                    <div style="color: var(--accent-color); font-size: 0.9rem; font-family: var(--font-title); letter-spacing: 1px;" id="entry-date">APRIL 23, 2026</div>
+                    <div style="width: 4px; height: 4px; border-radius: 50%; background: rgba(255,255,255,0.2);"></div>
+                    <div id="word-count" style="font-size: 0.8rem; color: var(--text-muted);">0 WORDS</div>
+                </div>
+            </div>
+            <div class="mood-selector">
+                <div class="mood-btn" title="radiant" onclick="setMood(this, 'radiant')"><i class="fa-solid fa-sun"></i></div>
+                <div class="mood-btn" title="balanced" onclick="setMood(this, 'balanced')"><i class="fa-solid fa-seedling"></i></div>
+                <div class="mood-btn" title="pensive" onclick="setMood(this, 'pensive')"><i class="fa-solid fa-cloud"></i></div>
+                <div class="mood-btn" title="heavy" onclick="setMood(this, 'heavy')"><i class="fa-solid fa-droplet"></i></div>
+            </div>
+        </div>
+
+        <div style="height: 1px; background: linear-gradient(90deg, var(--glass-border) 0%, transparent 100%); width: 100%;"></div>
+
+        <textarea id="journal-textarea" placeholder="Speak your mind, AURA is listening..." oninput="updateStats()"></textarea>
+        
+        <div id="ai-analysis" class="ai-analysis-panel">
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                <i class="fa-solid fa-brain-circuit" style="color: var(--accent-color);"></i>
+                <span style="font-family: var(--font-title); font-size: 0.9rem; letter-spacing: 1px;">AURA COGNITIVE INSIGHT</span>
+            </div>
+            <p id="ai-text" style="font-size: 0.95rem; color: rgba(255,255,255,0.8); line-height: 1.5; margin: 0; font-style: italic;">Analyzing sentiment and emotional resonance...</p>
+        </div>
+
+        <div class="meta-bar">
+            <div style="display: flex; gap: 20px;">
+                <span><i class="fa-solid fa-clock" style="margin-right: 5px;"></i> <span id="read-time">0 MIN READ</span></span>
+                <span><i class="fa-solid fa-shield-halved" style="margin-right: 5px;"></i> END-TO-END ENCRYPTED</span>
+            </div>
+            <div style="display: flex; gap: 15px;">
+                <button class="glass-btn-sharp" style="border-color: rgba(255,68,68,0.3); color: #ff4444;" onclick="deleteEntry()"><span>ERASE</span></button>
+                <button class="glass-btn-sharp" style="border-color: var(--accent-color);" onclick="analyzeEntry()"><span><i class="fa-solid fa-wand-magic-sparkles" style="margin-right: 8px;"></i> ANALYZE</span></button>
+                <button class="glass-btn-sharp" style="background: var(--accent-color); color: black; font-weight: bold;" onclick="saveEntry()"><span>PRESERVE</span></button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let entries = [];
+    let currentEntryId = null;
+    let deleteMode = false;
+    let selectedIds = new Set();
+
+    async function loadEntries() {
+        console.log("Loading entries...");
+        try {
+            const res = await fetch('/api/storage/journal_entries');
+            const data = await res.json();
+            entries = Array.isArray(data) ? data : [];
+            console.log("Entries loaded:", entries.length);
+            renderList();
+            if (entries.length > 0 && !currentEntryId) {
+                loadEntry(entries[0].id);
+            } else if (entries.length === 0) {
+                newEntry(); // Start with a fresh entry if none exist
+            }
+        } catch (e) {
+            console.error("Failed to load entries", e);
+            entries = [];
+            renderList();
+        }
+    }
+
+    function toggleDeleteMode() {
+        deleteMode = !deleteMode;
+        selectedIds.clear();
+        document.getElementById('bulk-actions').classList.toggle('active', deleteMode);
+        updateSelectedCount();
+        renderList();
+    }
+
+    function toggleSelectEntry(id, event) {
+        event.stopPropagation();
+        if (selectedIds.has(id)) {
+            selectedIds.delete(id);
+        } else {
+            selectedIds.add(id);
+        }
+        updateSelectedCount();
+    }
+
+    function updateSelectedCount() {
+        document.getElementById('selected-count').innerText = `${selectedIds.size} SELECTED`;
+    }
+
+    function renderList(filter = '') {
+        const list = document.getElementById('entries-list');
+        const filtered = filter ? entries.filter(e => 
+            (e.title && e.title.toLowerCase().includes(filter.toLowerCase())) || 
+            (e.content && e.content.toLowerCase().includes(filter.toLowerCase()))
+        ) : entries;
+
+        if (filtered.length === 0) {
+            list.innerHTML = `<div style="text-align: center; padding: 40px; opacity: 0.5; font-size: 0.9rem;">NO REFLECTIONS FOUND</div>`;
+            return;
+        }
+
+        list.innerHTML = filtered.map(e => {
+            const date = new Date(e.date);
+            const moodIcon = getMoodIcon(e.mood);
+            const isSelected = selectedIds.has(e.id);
+            
+            return `
+                <div class="entry-card ${currentEntryId === e.id ? 'active' : ''}" onclick="${deleteMode ? `toggleSelectEntry('${e.id}', event); this.querySelector('input').click()` : `loadEntry('${e.id}')`}">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+                        <div style="display: flex; align-items: center; gap: 10px; width: 80%;">
+                            ${deleteMode ? `<input type="checkbox" class="delete-checkbox" ${isSelected ? 'checked' : ''} onclick="event.stopPropagation()">` : ''}
+                            <div style="font-family: var(--font-title); font-size: 1rem; color: white; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${e.title || 'Untitled Reflection'}</div>
+                        </div>
+                        <div style="color: var(--accent-color); font-size: 0.9rem;">${moodIcon}</div>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-muted); padding-left: ${deleteMode ? '28px' : '0'}">
+                        <span>${date.toLocaleDateString(undefined, {month: 'short', day: 'numeric'})}</span>
+                        <span>${(e.content || '').split(/\s+/).filter(x => x).length} WORDS</span>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    function getMoodIcon(mood) {
+        switch(mood) {
+            case 'radiant': return '<i class="fa-solid fa-sun"></i>';
+            case 'pensive': return '<i class="fa-solid fa-cloud"></i>';
+            case 'heavy': return '<i class="fa-solid fa-droplet"></i>';
+            default: return '<i class="fa-solid fa-seedling"></i>';
+        }
+    }
+
+    function loadEntry(id) {
+        currentEntryId = id;
+        const entry = entries.find(e => e.id === id);
+        if (entry) {
+            document.getElementById('entry-title').value = entry.title || '';
+            document.getElementById('journal-textarea').value = entry.content || '';
+            document.getElementById('entry-date').innerText = new Date(entry.date).toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' }).toUpperCase();
+            
+            document.querySelectorAll('.mood-btn').forEach(btn => {
+                btn.classList.toggle('selected', btn.getAttribute('title') === entry.mood);
+            });
+            document.getElementById('ai-analysis').style.display = 'none';
+            updateStats();
+        }
+        renderList();
+    }
+
+    function updateStats() {
+        const text = document.getElementById('journal-textarea').value;
+        const words = text.split(/\s+/).filter(x => x).length;
+        const readTime = Math.ceil(words / 200);
+        
+        document.getElementById('word-count').innerText = `${words} WORDS`;
+        document.getElementById('read-time').innerText = `${readTime} MIN READ`;
+    }
+
+    function filterEntries(val) {
+        renderList(val);
+    }
+
+    function newEntry() {
+        const newId = Date.now().toString();
+        const entry = {
+            id: newId,
+            title: '',
+            content: '',
+            date: new Date().toISOString(),
+            mood: 'balanced'
+        };
+        entries.unshift(entry);
+        currentEntryId = newId;
+        loadEntry(newId);
+    }
+
+    function setMood(btn, mood) {
+        document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        if (currentEntryId) {
+            const entry = entries.find(e => e.id === currentEntryId);
+            if (entry) entry.mood = mood;
+        }
+    }
+
+    async function analyzeEntry() {
+        const panel = document.getElementById('ai-analysis');
+        const text = document.getElementById('ai-text');
+        const content = document.getElementById('journal-textarea').value;
+        
+        if (!content || content.length < 10) {
+            alert("AURA needs more data to analyze your cognitive state.");
+            return;
+        }
+
+        panel.style.display = 'block';
+        text.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Harmonizing with neural patterns...';
+        
+        try {
+            const response = await fetch('/api/analyze_journal', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ content: content })
+            });
+            const data = await response.json();
+            
+            // Artificial delay for "premium" feel
+            setTimeout(() => {
+                text.innerText = data.insight;
+                
+                // Color coding based on sentiment
+                if (data.sentiment === 'negative') text.style.color = '#ff6b6b';
+                else if (data.sentiment === 'positive') text.style.color = '#51cf66';
+                else text.style.color = 'rgba(255,255,255,0.9)';
+            }, 1000);
+        } catch (e) {
+            text.innerText = "Neural link failed during analysis. Please try again.";
+        }
+    }
+
+    async function saveEntry() {
+        console.log("Saving entry...", { currentEntryId, entriesCount: entries.length });
+        const status = document.getElementById('save-status');
+        status.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> SYNCING...';
+        
+        const titleVal = document.getElementById('entry-title').value;
+        const contentVal = document.getElementById('journal-textarea').value;
+
+        if (currentEntryId) {
+            const entry = entries.find(e => e.id === currentEntryId);
+            if (entry) {
+                entry.title = titleVal;
+                entry.content = contentVal;
+            } else {
+                console.warn("Current entry ID not found in entries array, creating new entry reference");
+                entries.unshift({
+                    id: currentEntryId,
+                    title: titleVal,
+                    content: contentVal,
+                    date: new Date().toISOString(),
+                    mood: 'balanced'
+                });
+            }
+        } else {
+            // Failsafe for missing currentEntryId
+            const newId = Date.now().toString();
+            currentEntryId = newId;
+            entries.unshift({
+                id: newId,
+                title: titleVal,
+                content: contentVal,
+                date: new Date().toISOString(),
+                mood: 'balanced'
+            });
+        }
+
+        try {
+            console.log("Sending data to server:", entries);
+            const res = await fetch('/api/storage/journal_entries', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ data: entries })
+            });
+
+            if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+
+            // Log to terminal via shared API or custom event if needed
+            // For now, let's assume dashboard is the only one with terminal, but we can log via server
+            fetch('/api/logs', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message: `JOURNAL: New entry "${document.getElementById('entry-title').value || 'Untitled'}" preserved in core.`, type: 'info' })
+            });
+
+            setTimeout(() => {
+                status.innerHTML = '<i class="fa-solid fa-circle-check"></i> COGNITIVE SYNC ACTIVE';
+                renderList();
+            }, 800);
+        } catch (e) {
+            status.innerHTML = '<i class="fa-solid fa-circle-xmark"></i> SYNC FAILED';
+        }
+    }
+
+    async function deleteEntry() {
+        if (!currentEntryId) return;
+        if (!confirm("Are you sure you want to erase this reflection? It will be removed from your cognitive history permanently.")) return;
+        
+        entries = entries.filter(e => e.id !== currentEntryId);
+        currentEntryId = entries.length > 0 ? entries[0].id : null;
+        
+        await fetch('/api/storage/journal_entries', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ data: entries })
+        });
+        
+        if (currentEntryId) loadEntry(currentEntryId);
+        else {
+            document.getElementById('entry-title').value = '';
+            document.getElementById('journal-textarea').value = '';
+            document.getElementById('ai-analysis').style.display = 'none';
+            renderList();
+        }
+    }
+
+    async function deleteSelected() {
+        if (selectedIds.size === 0) return;
+        if (!confirm(`Are you sure you want to erase ${selectedIds.size} reflections? This action cannot be undone.`)) return;
+
+        entries = entries.filter(e => !selectedIds.has(e.id));
+        
+        if (selectedIds.has(currentEntryId)) {
+            currentEntryId = entries.length > 0 ? entries[0].id : null;
+        }
+
+        await fetch('/api/storage/journal_entries', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ data: entries })
+        });
+
+        toggleDeleteMode(); // Exit delete mode
+        if (currentEntryId) loadEntry(currentEntryId);
+        else {
+            document.getElementById('entry-title').value = '';
+            document.getElementById('journal-textarea').value = '';
+            document.getElementById('ai-analysis').style.display = 'none';
+            renderList();
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', loadEntries);
+</script>
+{% endblock %}

@@ -1,0 +1,483 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+    .settings-container {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .settings-content-glass {
+        padding: 30px;
+        border-radius: 5px;
+        background: var(--glass-bg);
+        backdrop-filter: var(--glass-blur);
+        -webkit-backdrop-filter: var(--glass-blur);
+        border: 1px solid var(--glass-border);
+        box-shadow: 0 0 20px rgba(0,0,0,0.3);
+        margin-bottom: 50px;
+    }
+
+    .settings-content-glass::-webkit-scrollbar {
+        width: 6px;
+    }
+    .settings-content-glass::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.02);
+    }
+    .settings-content-glass::-webkit-scrollbar-thumb {
+        background: var(--accent-color);
+        border-radius: 3px;
+    }
+
+    .profile-edit-section {
+        display: flex;
+        gap: 30px;
+        margin-bottom: 40px;
+        padding-bottom: 40px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        align-items: flex-start;
+    }
+
+    .profile-pic-sidebar {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 15px;
+        flex-shrink: 0;
+        padding-top: 15px; /* Aligned with Legal Name label + small offset */
+    }
+
+    .profile-pic-container {
+        position: relative;
+        width: 120px;
+        height: 120px;
+    }
+
+    .profile-pic-large {
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.05);
+        border: 2px solid var(--accent-color);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3rem;
+        color: var(--text-muted);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .edit-pic-btn {
+        position: absolute;
+        bottom: 5px;
+        right: 5px;
+        width: 35px;
+        height: 35px;
+        background: var(--accent-color);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: black;
+        cursor: pointer;
+        font-size: 0.9rem;
+        transition: transform 0.3s ease;
+    }
+
+    .edit-pic-btn:hover {
+        transform: scale(1.1);
+    }
+
+    .profile-inputs {
+        flex: 1;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
+
+    .input-group {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .aura-input {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 5px !important; /* Sleek edges */
+        padding: 12px 15px;
+        color: white;
+        font-family: var(--font-body);
+        font-size: 0.95rem;
+        transition: all 0.3s ease;
+    }
+
+    .aura-input:focus {
+        outline: none;
+        border-color: var(--accent-color);
+        background: rgba(255, 255, 255, 0.05);
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    select.aura-input {
+        appearance: none;
+        cursor: pointer;
+        /* Custom Arrow */
+        background-image: linear-gradient(45deg, transparent 50%, var(--accent-color) 50%),
+                          linear-gradient(135deg, var(--accent-color) 50%, transparent 50%);
+        background-position: calc(100% - 20px) calc(1em + 2px),
+                             calc(100% - 15px) calc(1em + 2px);
+        background-size: 5px 5px,
+                         5px 5px;
+        background-repeat: no-repeat;
+    }
+
+    select.aura-input option {
+        background: #0F0F11;
+        color: white;
+        padding: 10px;
+    }
+
+    .wallpaper-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+        gap: 20px;
+        margin-top: 20px;
+    }
+
+    .wallpaper-card {
+        aspect-ratio: 16/9;
+        border-radius: 5px;
+        background-size: cover;
+        background-position: center;
+        position: relative;
+        cursor: pointer;
+        border: 2px solid rgba(255,255,255,0.1);
+        overflow: hidden;
+        transition: all 0.4s cubic-bezier(0.19, 1, 0.22, 1);
+        --glow-color: rgba(255,255,255,0.1);
+    }
+
+    .wallpaper-card:hover {
+        transform: scale(1.05) translateY(-5px);
+        border-color: var(--glow-color) !important;
+        box-shadow: 0 0 20px var(--glow-color), 0 15px 30px rgba(0,0,0,0.4) !important;
+    }
+
+    .wallpaper-card.active {
+        border-width: 2px;
+        border-style: solid;
+        border-color: var(--glow-color) !important;
+        box-shadow: 0 0 25px var(--glow-color) !important;
+    }
+
+    .wallpaper-label {
+        position: absolute;
+        inset: 0;
+        background: rgba(0,0,0,0.4);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.8rem;
+        color: white;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        font-family: var(--font-title);
+        opacity: 0.8;
+        transition: opacity 0.3s ease;
+    }
+
+    .wallpaper-card:hover .wallpaper-label {
+        opacity: 1;
+        background: rgba(0,0,0,0.2);
+    }
+
+    .theme-palette {
+        display: flex;
+        height: 6px;
+        margin-top: 10px;
+        border-radius: 3px;
+        overflow: hidden;
+        width: 100%;
+        background: rgba(255,255,255,0.1);
+    }
+
+    .palette-part { flex: 1; }
+
+    .settings-disclaimer {
+        margin-top: 40px;
+        padding: 20px;
+        background: rgba(255,255,255,0.03);
+        backdrop-filter: blur(10px);
+        border-radius: 5px;
+        font-size: 0.85rem;
+        color: var(--text-muted);
+        border: 1px solid rgba(255,255,255,0.05);
+        line-height: 1.6;
+    }
+
+    .save-btn {
+        padding: 12px 35px;
+        background: transparent;
+        color: var(--text-primary);
+        border: 1px solid var(--accent-color);
+        border-radius: 5px; /* Sleek edges */
+        cursor: pointer;
+        font-family: var(--font-title);
+        font-size: 1rem;
+        transition: all 0.4s cubic-bezier(0.19, 1, 0.22, 1);
+        position: relative;
+        overflow: hidden;
+        box-shadow: inset 0 0 0 0 var(--accent-color);
+    }
+
+    .save-btn:hover {
+        background: var(--accent-color);
+        color: black;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        transform: scale(1.05);
+    }
+
+    .save-btn:active {
+        transform: scale(0.95);
+    }
+
+    .save-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        border-color: rgba(255,255,255,0.2);
+        color: rgba(255,255,255,0.2);
+        box-shadow: none;
+    }
+</style>
+
+<div style="width: 100%; max-width: 1400px; margin-bottom: 30px;">
+    <div class="title-underline-wrapper">
+        <h1 class="reflect-text" data-text="Settings" style="font-size: 2.5rem; letter-spacing: 2px; margin-bottom: 0;">Settings</h1>
+        <div class="themed-wave-line" style="height: 5px;"></div>
+    </div>
+</div>
+
+<div class="settings-content-glass" style="width: 100%; max-width: 1400px;">
+    <!-- Profile Edit Section -->
+    <div class="profile-edit-section">
+        <div class="profile-pic-sidebar">
+            <div class="profile-pic-container">
+                <div class="profile-pic-large" id="profile-preview">
+                    <i class="fa-solid fa-user"></i>
+                </div>
+                <label for="pic-upload" class="edit-pic-btn">
+                    <i class="fa-solid fa-camera"></i>
+                </label>
+                <input type="file" id="pic-upload" hidden accept="image/*">
+            </div>
+            <button id="remove-pic-btn" onclick="removeProfilePic()" class="glass-btn-sharp" style="border-color: #ff4444; color: #ff4444; font-size: 0.8rem; width: fit-content; transition: all 0.3s ease;">
+                <span>REMOVE PICTURE</span>
+            </button>
+        </div>
+
+        <div class="profile-inputs">
+            <div class="input-group" style="grid-column: span 1;">
+                <label class="label">Legal Name</label>
+                <input type="text" class="aura-input" id="edit-name" placeholder="Enter Name">
+            </div>
+            <div class="input-group" style="grid-column: span 1;">
+                <label class="label">Age</label>
+                <input type="number" class="aura-input" id="edit-age" placeholder="Age" min="13" max="120">
+            </div>
+            <div class="input-group" style="grid-column: span 1;">
+                <label class="label">Social Tag</label>
+                <div style="display: flex; gap: 5px; align-items: center; cursor: not-allowed;" onclick="handleSocialTagClick(event)">
+                    <input type="text" class="aura-input" id="edit-social-user" placeholder="Username" style="flex: 1; pointer-events: none;" value="{{ user.social_tag.split('#')[0] if user.social_tag and '#' in user.social_tag else '' }}" readonly>
+                    <span style="color: var(--accent-color); font-family: var(--font-title); font-size: 1.2rem;">#</span>
+                    <input type="text" class="aura-input" id="edit-social-num" placeholder="0000" maxlength="4" style="width: 70px; text-align: center; pointer-events: none;" value="{{ user.social_tag.split('#')[1] if user.social_tag and '#' in user.social_tag else '' }}" readonly>
+                </div>
+            </div>
+            <div class="input-group" style="grid-column: span 1;">
+                <label class="label">Designation</label>
+                <input type="text" class="aura-input" id="edit-role" placeholder="Enter Role">
+            </div>
+            <div class="input-group">
+                <label class="label">Organization / Company</label>
+                <input type="text" class="aura-input" id="edit-company" placeholder="Enter Company">
+            </div>
+            <div class="input-group">
+                <label class="label">Email Address</label>
+                <input type="email" class="aura-input" id="edit-email" placeholder="Enter Email">
+            </div>
+            <div class="input-group" style="grid-column: span 2;">
+                <label class="label">Spiritual Alignment</label>
+                <select id="edit-religion" class="aura-input">
+                    <option value="Hinduism">🕉️ Hinduism (Sanātana Dharma)</option>
+                    <option value="Buddhism">☸️ Buddhism</option>
+                    <option value="Jainism">🪷 Jainism</option>
+                    <option value="Sikhism">⚔️ Sikhism</option>
+                    <option value="Not Religious">🌿 Not Religious / Prefer Not to Associate</option>
+                </select>
+            </div>
+            <div style="grid-column: span 2; display: flex; justify-content: flex-end; margin-top: 10px; padding-bottom: 20px;">
+                <button id="save-profile-btn" onclick="saveProfile()" class="glass-btn-sharp" style="padding: 0 40px;">
+                    <span>SAVE PROFILE</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Visual Interface Section -->
+    <div style="margin-bottom: 40px; padding-top: 20px; border-top: 1px solid rgba(255, 255, 255, 0.05);">
+        <h3 style="margin-bottom: 20px;">Visual Interface & Themes</h3>
+
+        <div class="wallpaper-grid">
+            <div class="wp-option" onclick="selectTheme('official')">
+                <div class="wallpaper-card" style="background-image: url('/static/wallpapers/official.png'); --glow-color: #0078d4;">
+                    <div class="wallpaper-label">Official Blue</div>
+                </div>
+                <div class="theme-palette">
+                    <div class="palette-part" style="background: #000;"></div>
+                    <div class="palette-part" style="background: #0078d4;"></div>
+                </div>
+            </div>
+
+            <div class="wp-option" onclick="selectTheme('darkgreen')">
+                <div class="wallpaper-card" style="background-image: url('/static/wallpapers/darkgreen.png'); --glow-color: #006400;">
+                    <div class="wallpaper-label">Dark Green</div>
+                </div>
+                <div class="theme-palette">
+                    <div class="palette-part" style="background: #000;"></div>
+                    <div class="palette-part" style="background: #006400;"></div>
+                </div>
+            </div>
+
+            <div class="wp-option" onclick="selectTheme('pinkpeach')">
+                <div class="wallpaper-card" style="background-image: url('/static/wallpapers/pinkpeach.png'); --glow-color: #FFB6C1;">
+                    <div class="wallpaper-label">Pink Peach</div>
+                </div>
+                <div class="theme-palette">
+                    <div class="palette-part" style="background: #000;"></div>
+                    <div class="palette-part" style="background: #FFB6C1;"></div>
+                </div>
+            </div>
+
+            <div class="wp-option" onclick="selectTheme('bluepurple')">
+                <div class="wallpaper-card" style="background-image: url('/static/wallpapers/bluepurple.png'); --glow-color: #8A2BE2;">
+                    <div class="wallpaper-label">Blue Purple</div>
+                </div>
+                <div class="theme-palette">
+                    <div class="palette-part" style="background: #000;"></div>
+                    <div class="palette-part" style="background: #8A2BE2;"></div>
+                </div>
+            </div>
+
+            <div class="wp-option" onclick="selectTheme('pinkpurple')">
+                <div class="wallpaper-card" style="background-image: url('/static/wallpapers/pinkpurple.png'); --glow-color: #DA70D6;">
+                    <div class="wallpaper-label">Pink Purple</div>
+                </div>
+                <div class="theme-palette">
+                    <div class="palette-part" style="background: #000;"></div>
+                    <div class="palette-part" style="background: #DA70D6;"></div>
+                </div>
+            </div>
+
+            <div class="wp-option" onclick="selectTheme('orangeblack')">
+                <div class="wallpaper-card" style="background-image: url('/static/wallpapers/orangeblack.png'); --glow-color: #FF4500;">
+                    <div class="wallpaper-label">Orange Black</div>
+                </div>
+                <div class="theme-palette">
+                    <div class="palette-part" style="background: #000;"></div>
+                    <div class="palette-part" style="background: #FF4500;"></div>
+                </div>
+            </div>
+
+            <div class="wp-option" onclick="selectTheme('peachdarkgreen')">
+                <div class="wallpaper-card" style="background-image: url('/static/wallpapers/peachdarkgreen.png'); --glow-color: #FFDAB9;">
+                    <div class="wallpaper-label">Peach Dark Green</div>
+                </div>
+                <div class="theme-palette">
+                    <div class="palette-part" style="background: #000;"></div>
+                    <div class="palette-part" style="background: #FFDAB9;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Security Section -->
+    <h3 style="margin-bottom: 20px; margin-top: 40px; border-top: 1px solid rgba(255, 255, 255, 0.05); padding-top: 20px;">Security Protocols</h3>
+    <div class="glass-panel" style="padding: 25px; margin-bottom: 40px;">
+        <div style="display: flex; flex-direction: column; gap: 15px;">
+            <label class="label">Security Configuration</label>
+
+            <!-- Verification Step -->
+            <div id="security-verification-step" style="display: flex; gap: 10px; margin-bottom: 10px;">
+                <input type="password" id="fuzzy-password-input" class="aura-input" placeholder="Enter Last Remembered Password" style="flex: 1;">
+                <button onclick="verifyIdentity()" class="glass-btn-sharp" style="width: auto; padding: 0 20px;">
+                    <span>VERIFY IDENTITY</span>
+                </button>
+            </div>
+
+            <!-- Locked Configuration -->
+            <div id="security-config-section" class="locked-section" style="display: flex; gap: 10px;">
+                <select id="update-security-question" class="aura-input">
+                    <option value="" disabled selected>Select Security Question</option>
+                    <option value="pet">What was the name of your first pet?</option>
+                    <option value="school">What elementary school did you attend?</option>
+                    <option value="city">In what city were you born?</option>
+                    <option value="mother">What is your mother's maiden name?</option>
+                    <option value="car">What was the make of your first car?</option>
+                </select>
+                <input type="text" id="update-security-answer" class="aura-input" placeholder="Answer" style="flex: 1;">
+                <button onclick="updateSecurity()" class="glass-btn-sharp" style="width: auto; padding: 0 20px;">
+                    <span>SAVE</span>
+                </button>
+            </div>
+
+            <div style="height: 1px; background: rgba(255,255,255,0.1); margin: 10px 0;"></div>
+
+            <label class="label">Change Access Key (Password)</label>
+
+            {% if user.security_question %}
+            <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 10px;">
+                <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 5px;">SECURITY QUESTION</div>
+                <div style="color: white; font-family: var(--font-title); letter-spacing: 1px;">
+                    {% if user.security_question == 'pet' %}What was the name of your first pet?
+                    {% elif user.security_question == 'school' %}What elementary school did you attend?
+                    {% elif user.security_question == 'city' %}In what city were you born?
+                    {% elif user.security_question == 'mother' %}What is your mother's maiden name?
+                    {% elif user.security_question == 'car' %}What was the make of your first car?
+                    {% else %}{{ user.security_question }}{% endif %}
+                </div>
+            </div>
+            <input type="text" id="security-answer-verify" class="aura-input" placeholder="Enter Security Answer" style="width: 100%;">
+            {% else %}
+            <div style="color: #ff4444; font-size: 0.9rem; margin-bottom: 10px;">
+                <i class="fa-solid fa-triangle-exclamation"></i> Security question not set. Please verify identity above to configure.
+            </div>
+            {% endif %}
+
+            <input type="password" id="new-password-input" class="aura-input" placeholder="Enter new secure password" style="width: 100%;">
+            <button onclick="changePassword()" class="glass-btn-sharp" style="width: 100%;">
+                <span>UPDATE CREDENTIALS</span>
+            </button>
+            <p style="font-size: 0.75rem; color: var(--text-muted); margin: 0;">
+                REQUIREMENT: MIN 12 CHARS • 1 CAPITAL
+            </p>
+        </div>
+    </div>
+
+    <!-- Account Management Section -->
+    <h3 style="margin-bottom: 20px; margin-top: 40px; border-top: 1px solid rgba(255, 255, 255, 0.05); padding-top: 20px;">Account Management</h3>
+    <div class="glass-panel" style="padding: 25px; margin-bottom: 40px;">
+        <p style="font-size: 0.85rem; color: #ff4444; margin-bottom: 20px; font-family: var(--font-body);">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+            <strong>DANGER ZONE:</strong> Deleting your account will permanently purge all associated data, including your profile, settings, and media. This action is irreversible.
+        </p>
+        <div style="display: flex; flex-direction: column; gap: 15px;">
+            <input type="password" id="delete-confirm-password" class="aura-input" placeholder="Confirm Access Key to Purge Account" style="border-color: rgba(255, 68, 68, 0.3);">
+            <button onclick="deleteAccount()" class="glass-btn-sharp" style="border-color: #ff4444; color: #ff4444; width: 100%;">
+                <span>DELETE ACCOUNT & PURGE DATA</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/preferences.js') }}"></script>
+{% endblock %}

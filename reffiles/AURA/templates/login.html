@@ -1,0 +1,1373 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AURA HEALTH ARENA</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @font-face {
+            font-family: 'Pasajero';
+            src: url("{{ url_for('static', filename='fonts/Pasajero.otf') }}");
+        }
+
+        @font-face {
+            font-family: 'Bourgeois';
+            src: url("{{ url_for('static', filename='fonts/Bourgeois-Book.otf') }}");
+        }
+
+        :root {
+            --glass-bg: rgba(255, 255, 255, 0.05);
+            --glass-blur: blur(30px);
+            --accent-color: #4ADE80;
+            --accent-glow: rgba(74, 222, 128, 0.5);
+            --font-title: 'Pasajero', sans-serif; /* Updated */
+            --font-body: 'Bourgeois', sans-serif; /* Updated */
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            font-family: var(--font-body);
+            background-color: #000;
+        }
+
+        .startup-background {
+            position: fixed;
+            inset: 0;
+            background-image: url("{{ url_for('static', filename='wallpapers/official.png') }}");
+            background-size: cover;
+            background-position: center;
+            opacity: 0;
+            transition: opacity 2s ease-in-out;
+        }
+
+        .startup-background.active {
+            opacity: 1;
+        }
+
+        .login-overlay {
+            position: fixed;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+        }
+
+        .welcome-text {
+            color: white;
+            font-size: 2.5rem;
+            font-family: var(--font-title);
+            letter-spacing: 4px;
+            opacity: 0;
+            text-align: center;
+            transition: opacity 2s ease-in-out, filter 2s ease-in-out;
+            filter: blur(10px);
+            z-index: 20;
+        }
+
+        .welcome-text.active {
+            opacity: 1;
+            filter: blur(0);
+        }
+
+        .glass-login-panel {
+            position: fixed;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 0;
+            background: var(--glass-bg);
+            backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur);
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            transition: width 1.5s cubic-bezier(0.19, 1, 0.22, 1);
+            z-index: 30;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+
+        .glass-login-panel.active {
+            width: 30%;
+        }
+
+        .glass-login-panel.collapsed {
+            width: 0 !important;
+        }
+
+        .panel-toggle {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+            cursor: pointer;
+            z-index: 100;
+            transition: all 0.3s ease;
+        }
+
+        .panel-toggle:hover {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: var(--accent-color);
+            color: var(--accent-color);
+        }
+
+        .toggle-out {
+            position: fixed;
+            left: 20px;
+            top: 20px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s ease;
+        }
+
+        .toggle-out.visible {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        /* AURA Branding Right */
+        .aura-branding-right {
+            position: absolute;
+            right: 140px;
+            top: 50%;
+            transform: translateY(-50%);
+            text-align: right;
+            pointer-events: none;
+            z-index: 15;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            opacity: 0;
+            transition: all 2s cubic-bezier(0.19, 1, 0.22, 1);
+        }
+
+        .aura-branding-right.centered {
+            right: 50% !important;
+            transform: translate(50%, -50%) !important;
+            align-items: center !important;
+            text-align: center !important;
+        }
+        .aura-branding-right.active {
+            opacity: 1;
+        }
+        .aura-title {
+            font-family: 'Bourgeois', sans-serif;
+            font-size: 11rem;
+            font-weight: bold;
+            margin: 0;
+            line-height: 0.8;
+            color: rgba(255, 255, 255, 0.85);
+            letter-spacing: 15px;
+            text-transform: uppercase;
+            text-shadow: 0 0 30px rgba(255, 255, 255, 0.2);
+            background: var(--glass-bg);
+            backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur);
+            display: inline-block;
+            padding: 5px 20px;
+            border-radius: 12px;
+        }
+        .aura-subtitle {
+            font-family: 'Bourgeois', sans-serif;
+            font-size: 1.8rem;
+            margin-top: 20px;
+            color: rgba(255, 255, 255, 0.6);
+            min-height: 1.5em;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+        }
+        .scramble-char {
+            display: inline-block;
+            font-family: monospace; /* Monospace looks better for scramble */
+        }
+
+        .begin-btn {
+            margin-top: 40px;
+            padding: 15px 50px;
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            font-family: var(--font-title);
+            letter-spacing: 2px;
+            cursor: pointer;
+            opacity: 0;
+            transition: opacity 1s ease, transform 0.3s ease, background 0.3s ease, box-shadow 0.3s ease;
+            pointer-events: none;
+            display: block;
+            margin: 40px auto 0;
+            text-align: center;
+            text-decoration: none;
+            z-index: 1000;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .begin-btn::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                90deg,
+                transparent,
+                rgba(255, 255, 255, 0.2),
+                transparent
+            );
+            transition: all 0.6s ease;
+        }
+
+        .begin-btn:hover::after {
+            left: 100%;
+        }
+
+        .begin-btn.visible {
+            opacity: 1;
+            pointer-events: all;
+            animation: beginGlow 3s infinite alternate;
+        }
+
+        @keyframes beginGlow {
+            0% { box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); border-color: rgba(255, 255, 255, 0.2); }
+            100% { box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2); border-color: rgba(255, 255, 255, 0.4); }
+        }
+
+        .begin-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border-color: white;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .fade-out {
+            opacity: 0 !important;
+            filter: blur(20px) !important;
+            transform: scale(0.9) !important;
+            transition: all 1.5s cubic-bezier(0.19, 1, 0.22, 1) !important;
+        }
+
+        .aura-btn-pro {
+            padding: 12px 30px;
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+            font-family: var(--font-title);
+            letter-spacing: 2px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.19, 1, 0.22, 1);
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        .aura-btn-pro::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                90deg,
+                transparent,
+                rgba(255, 255, 255, 0.2),
+                transparent
+            );
+            transition: all 0.6s ease;
+            z-index: 1;
+        }
+
+        .aura-btn-pro:hover::after {
+            left: 100%;
+        }
+
+        .aura-btn-pro::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: rgba(74, 222, 128, 0.4);
+            transition: left 4s linear;
+            z-index: -1;
+        }
+
+        .aura-btn-pro.filling::before {
+            left: 0;
+        }
+
+        .aura-btn-pro.error-state {
+            border-color: #FF4444 !important;
+            box-shadow: 0 0 20px rgba(255, 68, 68, 0.5) !important;
+            animation: flicker-red 0.15s infinite;
+        }
+
+        .aura-btn-pro.error-state::before {
+            background: rgba(255, 68, 68, 0.4) !important;
+            left: -100% !important;
+            transition: left 1.5s cubic-bezier(0.19, 1, 0.22, 1) !important;
+        }
+
+        @keyframes flicker-red {
+            0% { opacity: 1; }
+            50% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
+
+        .aura-btn-pro:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border-color: white;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            transform: translateY(-2px);
+        }
+
+        #loading-text {
+            font-family: var(--font-title);
+            color: var(--accent-color);
+            font-size: 0.8rem;
+            letter-spacing: 2px;
+            margin-top: 10px;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        #loading-text.visible {
+            opacity: 1;
+        }
+
+        /* Full page preloader */
+        #system-preloader {
+            position: fixed;
+            inset: 0;
+            background: transparent;
+            z-index: 10000;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            pointer-events: none;
+        }
+
+        .init-bar-container {
+            width: 200px;
+            height: 2px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 1px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+
+        .init-bar-fill {
+            width: 0%;
+            height: 100%;
+            background: var(--accent-color);
+            box-shadow: 0 0 10px var(--accent-color);
+            transition: width 0.5s linear;
+        }
+
+        .init-text {
+            font-family: var(--font-title);
+            color: white;
+            font-size: 1rem;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        .init-text.visible {
+            opacity: 1;
+        }
+
+        .login-content {
+            opacity: 0;
+            transition: opacity 1s ease 1s;
+            width: 80%;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .login-content.active {
+            opacity: 1;
+        }
+
+        .user-card {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            color: white;
+            margin-bottom: 10px;
+        }
+
+        .user-card.corrupt {
+            border: 1px solid #FF4444;
+            animation: glitch-border 0.2s infinite;
+            position: relative;
+        }
+
+        @keyframes glitch-border {
+            0% { border-color: #FF4444; box-shadow: 0 0 5px #FF4444; }
+            50% { border-color: transparent; box-shadow: 0 0 15px #FF4444; }
+            100% { border-color: #FF4444; box-shadow: 0 0 5px #FF4444; }
+        }
+
+        .delete-corrupt-btn {
+            background: #FF4444;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            cursor: pointer;
+            margin-left: auto;
+            font-family: var(--font-title);
+            letter-spacing: 1px;
+            z-index: 100;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--accent-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            background-size: cover;
+            background-position: center;
+        }
+
+        #setup-form, #password-modal {
+            display: none;
+            flex-direction: column;
+            gap: 15px;
+            width: 100%;
+        }
+
+        /* --- TRANSITION OVERLAY --- */
+        #transition-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: black;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 9999;
+            transition: opacity 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+            display: block !important;
+        }
+        #transition-overlay.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        /* --- SLEEK INPUTS & GLASSY DROPDOWN --- */
+        input[type="text"], input[type="password"], input[type="number"], select.aura-input {
+            background: rgba(255, 255, 255, 0.03) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            border-radius: 5px !important;
+            padding: 14px;
+            color: white !important;
+            box-sizing: border-box;
+            text-align: center;
+            font-family: var(--font-body);
+            transition: all 0.3s ease;
+        }
+
+        input[type="text"]:focus, input[type="password"]:focus, input[type="number"]:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            background: rgba(255, 255, 255, 0.03) !important;
+            box-shadow: 0 0 15px var(--accent-glow);
+        }
+
+        /* Prevent background change on autofill and fix white background bug */
+        input:-webkit-autofill,
+        input:-webkit-autofill:hover,
+        input:-webkit-autofill:focus,
+        input:-webkit-autofill:active {
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: white !important;
+            transition: background-color 5000s ease-in-out 0s;
+            box-shadow: inset 0 0 0 1000px rgba(255, 255, 255, 0.03) !important;
+        }
+
+        #socialUser {
+            background: rgba(255, 255, 255, 0.03) !important;
+            color: white !important;
+        }
+        
+        #socialUser::placeholder {
+            color: rgba(255, 255, 255, 0.3);
+        }
+
+        select.aura-input {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 5px !important;
+            padding: 14px;
+            color: white;
+            width: 100%;
+            text-align: center;
+            appearance: none;
+            cursor: pointer;
+            font-family: var(--font-body);
+            transition: all 0.3s ease;
+        }
+
+        select.aura-input:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            background-color: rgba(255, 255, 255, 0.03) !important;
+            box-shadow: 0 0 15px var(--accent-glow);
+        }
+
+        select.aura-input option {
+            background: #0F0F11;
+            color: white;
+            padding: 10px;
+        }
+
+        /* --- NOTIFICATION STACKING --- */
+        #aura-notice-container {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            pointer-events: none;
+        }
+
+        .aura-notice {
+            position: relative;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(25px) saturate(180%);
+            -webkit-backdrop-filter: blur(25px) saturate(180%);
+            padding: 12px 25px;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            width: fit-content;
+            min-width: 300px;
+            z-index: 10001;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+            border-radius: 5px;
+            transition: transform 0.6s cubic-bezier(0.19, 1, 0.22, 1), opacity 0.6s ease, margin-top 0.6s cubic-bezier(0.19, 1, 0.22, 1), max-height 0.6s ease;
+            opacity: 0;
+            transform: translateX(-100%) scale(0.9);
+            pointer-events: all;
+            max-height: 0;
+            margin-top: -15px;
+            overflow: hidden;
+        }
+
+        .aura-notice.active {
+            opacity: 1;
+            transform: translateX(0) scale(1);
+            max-height: 200px;
+            margin-top: 0;
+        }
+
+        .aura-notice.leaving {
+            opacity: 0;
+            transform: translateX(-120%) scale(0.8);
+            max-height: 0;
+            margin-top: -15px;
+            pointer-events: none;
+        }
+
+        .notice-bar {
+            width: 4px;
+            height: 40px;
+            background: var(--accent-color);
+            border-radius: 2px;
+            box-shadow: 0 0 15px var(--accent-glow);
+        }
+
+        .notice-text {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        #modal-username {
+            font-size: 1.5rem;
+            color: var(--accent-color);
+            font-family: var(--font-title);
+            letter-spacing: 2px;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div id="transition-overlay"></div>
+    <div id="system-preloader">
+        <div class="init-text" id="preloader-status">INITIALIZING USER PROFILE...</div>
+        <div class="init-bar-container">
+            <div class="init-bar-fill" id="init-bar"></div>
+        </div>
+    </div>
+    <audio id="aura-bg-music" loop preload="auto" playsinline webkit-playsinline></audio>
+    <div id="aura-notice-container"></div>
+    <div class="startup-background" id="bg"></div>
+
+    <div class="login-overlay" id="overlay">
+        <div class="aura-branding-right" id="auraBranding">
+            <h1 class="aura-title">AURA</h1>
+            <div class="aura-subtitle" id="auraSubtitle"></div>
+        </div>
+
+        <div class="panel-toggle toggle-out" id="panelToggleOut" onclick="togglePanel(false)">
+            <i class="fa-solid fa-arrow-right"></i>
+        </div>
+
+        <div style="display: flex; flex-direction: column; align-items: center;">
+            <div class="welcome-text" id="welcome">WELCOME TO AURA</div>
+            <button class="begin-btn" id="beginBtn">BEGIN</button>
+        </div>
+    </div>
+
+    <div class="glass-login-panel" id="panel">
+        <div class="panel-toggle" id="panelToggleIn" onclick="togglePanel(true)">
+            <i class="fa-solid fa-arrow-left"></i>
+        </div>
+        <div class="login-content" id="loginContent">
+            <h2 id="panelTitle" style="color: white; font-family: var(--font-title); letter-spacing: 2px;">AUTHENTICATION</h2>
+
+            <div id="userList">
+                {% for user in users %}
+                <div class="user-card {% if user.corrupt %}corrupt{% endif %}" onclick="{% if user.corrupt %}event.stopPropagation();{% else %}loginAs('{{ user.name }}'){% endif %}">
+                    {% if user.profile_pic %}
+                        <div class="user-avatar" style="background-image: url('{{ user.profile_pic }}');"></div>
+                    {% else %}
+                        <div class="user-avatar">{{ user.name[0].upper() if user.name else '?' }}</div>
+                    {% endif %}
+                    <span>{{ user.name or 'CORRUPT_DATA' }}</span>
+                    {% if user.corrupt %}
+                        <i class="fa-solid fa-triangle-exclamation" style="color: #FF4444; font-size: 0.8rem; margin-left: 5px;"></i>
+                        <button class="delete-corrupt-btn" onclick="event.stopPropagation(); showRestoration('{{ user.id }}', '{{ user.name }}')">TAKE ACTION</button>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Password Modal -->
+            <div id="password-modal">
+                <div id="standard-login-form" style="width: 100%; display: flex; flex-direction: column; gap: 12px; align-items: center;">
+                    <div id="modal-username"></div>
+
+                    <div style="width: 100%; position: relative;">
+                        <input type="password" id="loginPassword" placeholder="Enter Access Key" style="width: 100%;">
+                        <i class="fa-solid fa-eye" onclick="toggleVisibility('loginPassword')" style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); cursor: pointer; color: rgba(255,255,255,0.3); font-size: 0.9rem;"></i>
+                    </div>
+
+                    <button id="login-btn" class="aura-btn-pro" onclick="submitLogin()" style="width: 100%; margin-top: 15px; padding: 14px;">AUTHENTICATE</button>
+                    <button onclick="hidePasswordModal()" style="background: transparent; color: rgba(255,255,255,0.4); border: 1px solid rgba(255,255,255,0.1); border-radius: 5px; padding: 12px; cursor: pointer; font-size: 0.8rem; width: 100%; transition: all 0.3s ease; text-transform: uppercase; letter-spacing: 1px;">
+                        <i class="fa-solid fa-arrow-left"></i> CANCEL
+                    </button>
+                </div>
+            </div>
+
+            <div id="setup-form">
+                <div style="width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 15px; min-height: 450px;">
+                    <div id="avatar-preview" onclick="document.getElementById('avatar-input').click()" style="width: 120px; height: 120px; border-radius: 50%; background: rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: center; cursor: pointer; border: 1px solid rgba(255,255,255,0.1); overflow: hidden; position: relative; box-shadow: 0 0 20px rgba(255,255,255,0.05);">
+                        <i class="fa-solid fa-camera" style="font-size: 2rem; color: rgba(255,255,255,0.3);"></i>
+                        <img id="avatar-img" style="width: 100%; height: 100%; object-fit: cover; display: none;">
+                    </div>
+                    <input type="file" id="avatar-input" accept="image/*" style="display: none;" onchange="previewAvatar(this)">
+
+                    <div style="width: 100%; display: flex; flex-direction: column; gap: 12px; align-items: center;">
+                        <input type="text" id="newUsername" placeholder="Legal Name" style="width: 100%;">
+                        <input type="number" id="userAge" placeholder="Age" min="13" max="120" style="width: 100%;">
+
+                        <div style="display: flex; gap: 5px; align-items: center; width: 100%;">
+                            <input type="text" id="socialUser" placeholder="Social Username" style="flex: 1;" oninput="this.value = this.value.replace(/[^a-zA-Z]/g, '')">
+                            <span style="color: var(--accent-color); font-family: var(--font-title); font-size: 1.2rem;">#</span>
+                            <input type="text" id="socialNum" placeholder="0000" maxlength="4" style="width: 70px; text-align: center;" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                        </div>
+
+                        <div style="width: 100%; position: relative;">
+                            <input type="password" id="newPassword" placeholder="Password" style="width: 100%;">
+                            <i class="fa-solid fa-eye" onclick="toggleVisibility('newPassword')" style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); cursor: pointer; color: rgba(255,255,255,0.3); font-size: 0.9rem;"></i>
+                        </div>
+
+                        <div style="width: 100%; position: relative;">
+                            <input type="password" id="confirmPassword" placeholder="Confirm Password" style="width: 100%;">
+                            <i class="fa-solid fa-eye" onclick="toggleVisibility('confirmPassword')" style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); cursor: pointer; color: rgba(255,255,255,0.3); font-size: 0.9rem;"></i>
+                        </div>
+
+                        <select id="securityQuestion" class="aura-input">
+                            <option value="" disabled selected>Select Security Question</option>
+                            <option value="pet">What was the name of your first pet?</option>
+                            <option value="school">What elementary school did you attend?</option>
+                            <option value="city">In what city were you born?</option>
+                            <option value="mother">What is your mother's maiden name?</option>
+                            <option value="car">What was the make of your first car?</option>
+                        </select>
+
+                        <input type="text" id="securityAnswer" placeholder="Security Answer" style="width: 100%;">
+                    </div>
+
+                    <button class="aura-btn-pro" id="creation-btn" onclick="createUser()" style="width: 100%; margin-top: 15px; padding: 14px;">PROCEED TO CREATION</button>
+                    <div id="loading-text">INITIALIZING USER PROFILE...</div>
+                    <button onclick="hideSetup()" style="background: transparent; color: rgba(255,255,255,0.4); border: 1px solid rgba(255,255,255,0.1); border-radius: 5px; padding: 12px; cursor: pointer; font-size: 0.8rem; width: 100%; transition: all 0.3s ease; text-transform: uppercase; letter-spacing: 1px;">
+                        <i class="fa-solid fa-arrow-left"></i> GO BACK
+                    </button>
+                </div>
+            </div>
+
+            <button id="add-user-btn" onclick="showSetup()" style="background: transparent; color: var(--accent-color); border: none; margin-top: 20px; cursor: pointer; font-size: 0.9rem; display: none;">
+                <i class="fa-solid fa-plus"></i> NEW USER
+            </button>
+        </div>
+    </div>
+
+    <script>
+        window.showNotice = function(title, status, duration = 3000, showBlur = true, isError = false) {
+            const container = document.getElementById('aura-notice-container');
+            const notice = document.createElement('div');
+            notice.className = 'aura-notice';
+
+            const barColor = isError ? '#ff4444' : 'var(--accent-color)';
+            const barShadow = isError ? '0 0 15px rgba(255, 68, 68, 0.5)' : '0 0 15px var(--accent-glow)';
+
+            notice.innerHTML = `
+                <div class="notice-bar" style="background: ${barColor}; box-shadow: ${barShadow};"></div>
+                <div class="notice-text">
+                    <div style="font-family: var(--font-title); color: white; font-size: 1.1rem; letter-spacing: 1px; line-height: 1.2;">${title}</div>
+                    <div style="font-family: var(--font-body); color: white; font-size: 0.85rem; opacity: 0.9; letter-spacing: 0.5px;">${status}</div>
+                </div>
+            `;
+
+            container.appendChild(notice);
+
+            requestAnimationFrame(() => {
+                notice.classList.add('active');
+            });
+
+            setTimeout(() => {
+                notice.classList.add('leaving');
+                setTimeout(() => {
+                    notice.remove();
+                }, 600);
+            }, duration);
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- GLOBAL MUSIC ENGINE ---
+            const bgMusic = document.getElementById('aura-bg-music');
+            const hasUsers = {{ 'true' if users|length > 0 else 'false' }};
+            const musicLib = {
+                'Hinduism': { name: 'Vedic Chants', file: "{{ url_for('static', filename='audio/musiclib/hinduism.mp3') }}" },
+                'Buddhism': { name: 'Zen Calm', file: "{{ url_for('static', filename='audio/musiclib/buddhism.mp3') }}" },
+                'Jainism': { name: 'Tirthankar Stuti', file: "{{ url_for('static', filename='audio/musiclib/jainism.mp3') }}" },
+                'Sikhism': { name: 'Gurbani Keertan', file: "{{ url_for('static', filename='audio/musiclib/Sikh.mp3') }}" },
+                'Default': { name: 'Ambient Drift', file: "{{ url_for('static', filename='audio/musiclib/bg.mp3') }}" }
+            };
+
+            let currentReligion = localStorage.getItem('aura_religion') || 'Default';
+            let manualTrack = localStorage.getItem('aura_manual_track');
+            const resumeEvents = ['click', 'keydown', 'touchstart'];
+            let resumeListenersAttached = false;
+
+            bgMusic.preload = 'auto';
+            bgMusic.muted = false;
+            bgMusic.volume = 1;
+            bgMusic.setAttribute('playsinline', '');
+            bgMusic.setAttribute('webkit-playsinline', '');
+
+            if (!hasUsers) {
+                currentReligion = 'Default';
+                manualTrack = null;
+                localStorage.setItem('aura_religion', 'Default');
+                localStorage.removeItem('aura_manual_track');
+                localStorage.setItem('aura_music_paused', 'false');
+                localStorage.removeItem('aura_music_time');
+            }
+
+            function getTargetTrack() {
+                const targetTrackKey = manualTrack || currentReligion;
+                return musicLib[targetTrackKey] || musicLib['Default'];
+            }
+
+            function ensureMusicSource(track) {
+                const absolutePath = new URL(track.file, window.location.origin).href;
+                if (bgMusic.src !== absolutePath) {
+                    bgMusic.src = track.file;
+                    bgMusic.load();
+                }
+            }
+
+            function restoreMusicTime(resetTime = false) {
+                if (resetTime) {
+                    try {
+                        bgMusic.currentTime = 0;
+                    } catch (error) {
+                        console.log('AURA startup music reset skipped.', error);
+                    }
+                    return;
+                }
+
+                const savedTime = Number.parseFloat(localStorage.getItem('aura_music_time') || '');
+                if (!Number.isFinite(savedTime) || savedTime <= 0) {
+                    return;
+                }
+
+                const applySavedTime = () => {
+                    try {
+                        if (Math.abs(bgMusic.currentTime - savedTime) > 1) {
+                            bgMusic.currentTime = savedTime;
+                        }
+                    } catch (error) {
+                        console.log('AURA startup music seek skipped.', error);
+                    }
+                };
+
+                if (bgMusic.readyState >= 1) {
+                    applySavedTime();
+                } else {
+                    bgMusic.addEventListener('loadedmetadata', applySavedTime, { once: true });
+                }
+            }
+
+            function removeResumeListeners() {
+                if (!resumeListenersAttached) {
+                    return;
+                }
+
+                resumeEvents.forEach((eventName) => {
+                    document.removeEventListener(eventName, requestMusicResume);
+                });
+                resumeListenersAttached = false;
+            }
+
+            function requestMusicResume() {
+                if (bgMusic.paused) {
+                    playAuraMusic({ force: true, resetTime: !hasUsers });
+                }
+            }
+
+            function addResumeListeners() {
+                if (resumeListenersAttached) {
+                    return;
+                }
+
+                resumeEvents.forEach((eventName) => {
+                    const options = eventName === 'touchstart' ? { passive: true } : undefined;
+                    document.addEventListener(eventName, requestMusicResume, options);
+                });
+                resumeListenersAttached = true;
+            }
+
+            function playAuraMusic(options = {}) {
+                const force = options.force === true;
+                const resetTime = options.resetTime === true;
+                const track = getTargetTrack();
+
+                ensureMusicSource(track);
+                restoreMusicTime(resetTime);
+
+                const wasPaused = localStorage.getItem('aura_music_paused') === 'true';
+                if (!force && wasPaused) {
+                    return Promise.resolve(false);
+                }
+
+                localStorage.setItem('aura_music_paused', 'false');
+
+                const playPromise = bgMusic.play();
+                if (playPromise && typeof playPromise.then === 'function') {
+                    return playPromise.then(() => {
+                        removeResumeListeners();
+                        return true;
+                    }).catch((error) => {
+                        console.log('AURA startup music blocked.', error);
+                        addResumeListeners();
+                        return false;
+                    });
+                }
+
+                const started = !bgMusic.paused;
+                if (started) {
+                    removeResumeListeners();
+                } else {
+                    addResumeListeners();
+                }
+                return Promise.resolve(started);
+            }
+
+            // Persistence before navigation
+            window.addEventListener('beforeunload', () => {
+                localStorage.setItem('aura_music_time', bgMusic.currentTime);
+                localStorage.setItem('aura_music_paused', bgMusic.paused);
+            });
+
+            bgMusic.addEventListener('timeupdate', () => {
+                if (Math.floor(bgMusic.currentTime) % 2 === 0) {
+                    localStorage.setItem('aura_music_time', bgMusic.currentTime);
+                }
+            });
+
+            bgMusic.addEventListener('playing', removeResumeListeners);
+            bgMusic.addEventListener('error', () => {
+                console.log('AURA startup music failed to load.', bgMusic.error);
+                addResumeListeners();
+            });
+
+            addResumeListeners();
+            playAuraMusic({ force: true, resetTime: !hasUsers });
+
+            const bg = document.getElementById('bg');
+            const welcome = document.getElementById('welcome');
+            const panel = document.getElementById('panel');
+            const loginContent = document.getElementById('loginContent');
+            const beginBtn = document.getElementById('beginBtn');
+            const userList = document.getElementById('userList');
+            const addUserBtn = document.getElementById('add-user-btn');
+            const auraBranding = document.getElementById('auraBranding');
+
+            function showBranding() {
+                if (auraBranding) {
+                    auraBranding.classList.add('active');
+                    startSubtitleCycle();
+                }
+            }
+
+            if (hasUsers) {
+                bg.classList.add('active'); // Activate wallpaper immediately
+                setTimeout(() => {
+                    welcome.classList.add('active');
+                    setTimeout(() => {
+                        welcome.classList.add('fade-out');
+                        setTimeout(() => {
+                            welcome.style.display = 'none';
+                            beginBtn.style.display = 'none';
+                            panel.classList.add('active');
+                            loginContent.classList.add('active');
+                            addUserBtn.style.display = 'block';
+                            showBranding();
+                        }, 1000);
+                    }, 3500); // Increased stay duration
+                }, 1000);
+            } else {
+                bg.classList.add('active'); // Activate wallpaper immediately
+                setTimeout(() => {
+                    welcome.classList.add('active');
+                    setTimeout(() => {
+                        beginBtn.classList.add('visible');
+                    }, 2000);
+                }, 2000);
+            }
+
+            beginBtn.addEventListener('click', () => {
+                welcome.classList.add('fade-out');
+                beginBtn.classList.add('fade-out');
+
+                setTimeout(() => {
+                    welcome.style.display = 'none';
+                    beginBtn.style.display = 'none';
+                    panel.classList.add('active');
+                    loginContent.classList.add('active');
+                    showBranding();
+
+                    if (userList.children.length === 0) {
+                        showSetup();
+                    } else {
+                        addUserBtn.style.display = 'block';
+                    }
+                }, 1500);
+            });
+        });
+
+        function togglePanel(collapse) {
+            const panel = document.getElementById('panel');
+            const branding = document.getElementById('auraBranding');
+            const toggleOut = document.getElementById('panelToggleOut');
+
+            if (collapse) {
+                panel.classList.add('collapsed');
+                branding.classList.add('centered');
+                setTimeout(() => {
+                    toggleOut.classList.add('visible');
+                }, 1000);
+            } else {
+                panel.classList.remove('collapsed');
+                branding.classList.remove('centered');
+                toggleOut.classList.remove('visible');
+            }
+        }
+
+        // --- AURA Branding Subtitle Cycle ---
+        const auraSubtitles = [
+            "For your well being",
+            "For your better health",
+            "Towards a mindful future",
+            "Your digital sanctuary",
+            "Elevate your focus",
+            "Harmony in every breath",
+            "Balance your inner life",
+            "Clarity and peace",
+            "Your wellness partner",
+            "Mindful living evolved"
+        ];
+
+        let isSubtitleCycling = false;
+        function startSubtitleCycle() {
+            if (isSubtitleCycling) return;
+            isSubtitleCycling = true;
+            cycleSubtitles();
+        }
+
+        function cycleSubtitles() {
+            const el = document.getElementById('auraSubtitle');
+            if (!el) return;
+            const text = auraSubtitles[Math.floor(Math.random() * auraSubtitles.length)];
+            
+            typeWriterScramble(el, text, () => {
+                setTimeout(() => {
+                    backspace(el, () => {
+                        setTimeout(cycleSubtitles, 800);
+                    });
+                }, 3500);
+            });
+        }
+
+        function typeWriterScramble(element, text, fnCallback) {
+            const SCRAMBLE_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+<>?:{}|';
+            const words = text.trim().split(/\s+/);
+            const scrambleWordCount = Math.min(2, words.length);
+            let charIndex = 0;
+            let scramblingChars = [];
+            
+            element.innerHTML = '';
+            
+            const interval = setInterval(() => {
+                if (charIndex < text.length) {
+                    const char = text[charIndex];
+                    const wordsSoFar = text.substring(0, charIndex + 1).trim().split(/\s+/);
+                    const isScrambleZone = wordsSoFar.length <= scrambleWordCount && char !== ' ';
+
+                    const span = document.createElement('span');
+                    if (char === ' ') {
+                        span.innerHTML = '&nbsp;';
+                    } else {
+                        span.textContent = char;
+                    }
+                    element.appendChild(span);
+
+                    if (isScrambleZone) {
+                        scramblingChars.push({
+                            el: span,
+                            target: char,
+                            frames: 10 + Math.floor(Math.random() * 15)
+                        });
+                    }
+                    charIndex++;
+                }
+
+                scramblingChars.forEach(obj => {
+                    if (obj.frames > 0) {
+                        obj.el.textContent = SCRAMBLE_CHARS[Math.floor(Math.random() * SCRAMBLE_CHARS.length)];
+                        obj.el.style.opacity = '0.7';
+                        obj.frames--;
+                    } else if (obj.frames === 0) {
+                        obj.el.textContent = obj.target;
+                        obj.el.style.opacity = '1';
+                        obj.frames = -1;
+                    }
+                });
+
+                if (charIndex >= text.length && scramblingChars.every(o => o.frames < 0)) {
+                    clearInterval(interval);
+                    if (fnCallback) fnCallback();
+                }
+            }, 40);
+        }
+
+        function backspace(element, fnCallback) {
+            let text = element.innerText;
+            const interval = setInterval(() => {
+                if (text.length > 0) {
+                    text = text.substring(0, text.length - 1);
+                    element.innerText = text;
+                } else {
+                    clearInterval(interval);
+                    if (fnCallback) fnCallback();
+                }
+            }, 25);
+        }
+
+        function showSetup() {
+            document.getElementById('panelTitle').innerText = 'IDENTITY INITIALIZATION';
+            document.getElementById('userList').style.display = 'none';
+            document.getElementById('add-user-btn').style.display = 'none';
+            document.getElementById('password-modal').style.display = 'none';
+            document.getElementById('setup-form').style.display = 'flex';
+        }
+
+        function hideSetup() {
+            const userList = document.getElementById('userList');
+            const setupForm = document.getElementById('setup-form');
+            const addUserBtn = document.getElementById('add-user-btn');
+            const panelTitle = document.getElementById('panelTitle');
+            const welcome = document.getElementById('welcome');
+            const beginBtn = document.getElementById('beginBtn');
+            const panel = document.getElementById('panel');
+            const usersExist = userList.querySelectorAll('.user-card').length > 0;
+
+            if (usersExist) {
+                setupForm.style.display = 'none';
+                userList.style.display = 'block';
+                addUserBtn.style.display = 'block';
+                panelTitle.textContent = 'AUTHENTICATION';
+            } else {
+                panel.classList.remove('active');
+                setTimeout(() => {
+                    welcome.style.display = 'block';
+                    beginBtn.style.display = 'block';
+                    setTimeout(() => {
+                        welcome.classList.remove('fade-out');
+                        beginBtn.classList.remove('fade-out');
+                    }, 50);
+                }, 1000);
+            }
+        }
+
+        function triggerTransition(targetUrl) {
+            const overlay = document.getElementById('transition-overlay');
+            sessionStorage.setItem('aura_force_music_start', 'true');
+            localStorage.setItem('aura_music_paused', 'false');
+            overlay.classList.add('active');
+            setTimeout(() => {
+                window.location.href = targetUrl;
+            }, 1200);
+        }
+
+        let currentLoginUser = "";
+
+        function loginAs(username) {
+            currentLoginUser = username;
+            document.getElementById('userList').style.display = 'none';
+            document.getElementById('add-user-btn').style.display = 'none';
+            document.getElementById('setup-form').style.display = 'none';
+            document.getElementById('password-modal').style.display = 'flex';
+            document.getElementById('modal-username').innerText = username;
+            document.getElementById('loginPassword').value = '';
+            document.getElementById('loginPassword').focus();
+        }
+
+        function hidePasswordModal() {
+            document.getElementById('password-modal').style.display = 'none';
+            document.getElementById('userList').style.display = 'block';
+            document.getElementById('add-user-btn').style.display = 'block';
+            currentLoginUser = "";
+        }
+
+        function handleError(btnId, title, msg) {
+            const btn = document.getElementById(btnId);
+            if (!btn) return;
+            btn.classList.remove('filling');
+            btn.classList.add('error-state');
+            window.showNotice(title, msg, 4000, false, true);
+
+            setTimeout(() => {
+                btn.classList.remove('error-state');
+                btn.disabled = false;
+                const loadingText = document.getElementById('loading-text');
+                if (loadingText) loadingText.classList.remove('visible');
+            }, 1500);
+        }
+
+        function submitLogin() {
+            const password = document.getElementById('loginPassword').value;
+            if (!password) return;
+
+            const btn = document.getElementById('login-btn');
+            if (btn) {
+                btn.classList.add('filling');
+                btn.disabled = true;
+            }
+
+            fetch('/api/login', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({username: currentLoginUser, password})
+            }).then(r => r.json()).then(data => {
+                if (data.status === 'success') {
+                    triggerTransition('/');
+                } else {
+                    handleError('login-btn', 'ACCESS DENIED', 'Authentication failed.');
+                }
+            }).catch(err => {
+                handleError('login-btn', 'CONNECTION ERROR', 'Link severed.');
+            });
+        }
+
+        document.getElementById('loginPassword').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') submitLogin();
+        });
+
+        let selectedAvatar = "";
+
+        function previewAvatar(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('avatar-img').src = e.target.result;
+                    document.getElementById('avatar-img').style.display = 'block';
+                    document.querySelector('#avatar-preview i').style.display = 'none';
+                    selectedAvatar = e.target.result;
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function createUser() {
+            const username = document.getElementById('newUsername').value;
+            const age = document.getElementById('userAge').value;
+            const social_user = document.getElementById('socialUser').value;
+            const social_num = document.getElementById('socialNum').value;
+            const password = document.getElementById('newPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            const securityQuestion = document.getElementById('securityQuestion').value;
+            const securityAnswer = document.getElementById('securityAnswer').value;
+
+            if (!username || !age || !social_user || !social_num || !password || !confirmPassword || !securityQuestion || !securityAnswer) {
+                handleError('creation-btn', 'SYSTEM ALERT', 'All fields required.');
+                return;
+            }
+
+            if (password !== confirmPassword) {
+                handleError('creation-btn', 'INTEGRITY ERROR', 'Passwords do not match.');
+                return;
+            }
+
+            const btn = document.getElementById('creation-btn');
+            const loadingText = document.getElementById('loading-text');
+            const preloader = document.getElementById('system-preloader');
+            const preloaderStatus = document.getElementById('preloader-status');
+
+            btn.classList.add('filling');
+            btn.disabled = true;
+            loadingText.classList.add('visible');
+
+            const sequence = async () => {
+                const steps = [
+                    "ALLOCATING SECURE STORAGE...",
+                    "CONFIGURING ENVIRONMENT...",
+                    "INITIALIZING USER PROFILE..."
+                ];
+
+                for (let i = 0; i < steps.length; i++) {
+                    loadingText.innerText = steps[i];
+                    await new Promise(r => setTimeout(r, 800));
+                }
+
+                try {
+                    const response = await fetch('/api/users', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({
+                            username, age, social_user, social_num, password,
+                            confirm_password: confirmPassword, avatar: selectedAvatar,
+                            security_question: securityQuestion, security_answer: securityAnswer
+                        })
+                    });
+
+                    const data = await response.json();
+
+                    if (data.status === 'success') {
+                        sessionStorage.setItem('aura_force_music_start', 'true');
+                        localStorage.setItem('aura_music_paused', 'false');
+                        if (data.oobe) {
+                            window.location.href = '/oobe';
+                        } else {
+                            window.location.href = '/';
+                        }
+                    } else {
+                        handleError('creation-btn', 'CREATION FAILED', data.message || 'Verification failed.');
+                    }
+                } catch (err) {
+                    handleError('creation-btn', 'ERROR', 'Network Error Detected');
+                }
+            };
+
+            sequence();
+        }
+
+        function toggleVisibility(id) {
+            const input = document.getElementById(id);
+            const icon = event.target;
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.replace('fa-eye', 'fa-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.replace('fa-eye-slash', 'fa-eye');
+            }
+        }
+
+        // --- SERVER RESTART AUTO-REFRESH ---
+        (function() {
+            let lastServerStartTime = null;
+            function checkServerStatus() {
+                fetch('/server_status')
+                    .then(response => response.json())
+                    .then(data => {
+                        if (lastServerStartTime === null) {
+                            lastServerStartTime = data.server_start_time;
+                        } else if (lastServerStartTime !== data.server_start_time) {
+                            console.log('Server restart detected. Reloading...');
+                            window.location.reload();
+                        }
+                    })
+                    .catch(err => {
+                        console.debug('Server status check failed:', err);
+                    });
+            }
+            setInterval(checkServerStatus, 2000);
+        })();
+    </script>
+</body>
+</html>
