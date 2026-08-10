@@ -49,11 +49,12 @@ const fallbackTasks: TaskTemplate[] = [
   { id: "WEB-001", category: "General tasks", name: "Microsoft Edge worker", intensity: "Low", cpu: 4, ram: 800, gpu: 4, gpuMemory: 400, power: 19, temperature: 41 },
 ];
 
-type RuntimeNode = { id: number; tasks: LiveTask[] };
+type RuntimeNode = { id: number; tasks: LiveTask[]; offline: boolean };
 
 const clamp = (value: number, min = 0, max = 100) => Math.min(max, Math.max(min, value));
 const average = (items: number[]) => items.length ? items.reduce((sum, value) => sum + value, 0) / items.length : 0;
 const nowLabel = () => new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+const initiallyOffline = new Set([8, 21, 27]);
 
 function metrics(node: RuntimeNode): Omit<NodeTelemetry, "id" | "cluster" | "state" | "tasks"> {
   const tasks = node.tasks;
@@ -111,7 +112,11 @@ export function clusterNodeIds(cluster: number) {
 }
 
 export function useSimulation() {
-  const runtime = useRef<RuntimeNode[]>(Array.from({ length: 60 }, (_, index) => ({ id: index + 1, tasks: [] })));
+  const runtime = useRef<RuntimeNode[]>(Array.from({ length: 60 }, (_, index) => ({
+    id: index + 1,
+    tasks: [],
+    offline: initiallyOffline.has(index + 1),
+  })));
   const catalog = useRef<TaskTemplate[]>([]);
   const sequence = useRef(0);
   const [, redraw] = useState(0);
@@ -123,6 +128,7 @@ export function useSimulation() {
   useEffect(() => {
     fetch("/api/tasks").then((response) => response.json()).then((tasks: TaskTemplate[]) => { catalog.current = tasks; }).catch(() => addLog("NOTICE", "Task library unavailable; running the safe local baseline."));
     runtime.current.forEach((node) => {
+      if (node.offline) return;
       for (let count = 0; count < 4; count += 1) {
         const template = pickTemplate(catalog.current);
         if (canAccept(node, template)) node.tasks.push(makeTask(template, sequence.current++));
@@ -133,6 +139,7 @@ export function useSimulation() {
       const current = Date.now();
       const intakeDue = current - lastIntakeAt >= 10000;
       runtime.current.forEach((node) => {
+        if (node.offline) return;
         node.tasks = node.tasks.flatMap((task) => {
           if (task.state === "terminating" && task.endsAt && current >= task.endsAt) {
             addLog("POWER", `Task ${task.name} terminated on node ${node.id}.`);
@@ -162,7 +169,7 @@ export function useSimulation() {
 
   const telemetry = runtime.current.map((node): NodeTelemetry => {
     const values = metrics(node);
-    return { id: node.id, cluster: clusterForNode(node.id), state: node.tasks.length ? "online" : "ready", ...values, tasks: node.tasks };
+    return { id: node.id, cluster: clusterForNode(node.id), state: node.offline ? "offline" : node.tasks.length ? "online" : "ready", ...values, tasks: node.tasks };
   });
 
   function terminateTask(nodeId: number, uid: string) {
@@ -182,5 +189,22 @@ export function useSimulation() {
     redraw((value) => value + 1);
   }
 
-  return { telemetry, logs, notice, terminateTask };
+  function shutdownCluster(cluster: number) {
+    const targets = runtime.current.filter((node) => clusterForNode(node.id) === cluster && !node.offline);
+    if (!targets.length) {
+      setNotice(`Cluster ${String(cluster + 1).padStart(2, "0")} is already offline.`);
+      window.setTimeout(() => setNotice(""), 5200);
+      return;
+    }
+    targets.forEach((node) => {
+      node.offline = true;
+      node.tasks = [];
+    });
+    setNotice(`Cluster ${String(cluster + 1).padStart(2, "0")} powered down. Rack lights disabled.`);
+    addLog("POWER", `Emergency shutdown completed for Cluster ${String(cluster + 1).padStart(2, "0")}.`);
+    redraw((value) => value + 1);
+    window.setTimeout(() => setNotice(""), 5200);
+  }
+
+  return { telemetry, logs, notice, terminateTask, shutdownCluster };
 }

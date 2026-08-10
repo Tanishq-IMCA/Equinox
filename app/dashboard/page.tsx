@@ -91,7 +91,9 @@ export default function Dashboard() {
   const [selectedCluster, setSelectedCluster] = useState(5);
   const [shutdownNotice, setShutdownNotice] = useState("");
   const sceneHost = useRef<HTMLDivElement>(null);
-  const { telemetry, logs, notice, terminateTask } = useSimulation();
+  const { telemetry, logs, notice, terminateTask, shutdownCluster } = useSimulation();
+  const telemetryRef = useRef(telemetry);
+  telemetryRef.current = telemetry;
   const selectedClusterNodes = telemetry.filter((node) => node.cluster === selectedCluster);
   const clusterTotals = {
     cpu: selectedClusterNodes.reduce((sum, node) => sum + node.cpu, 0),
@@ -212,6 +214,57 @@ export default function Dashboard() {
     let disposed = false;
     const powerPulses: { mesh: THREE.Mesh; curve: THREE.CatmullRomCurve3; offset: number }[] = [];
     const rackRoots: THREE.Object3D[] = [];
+    const rackVisuals: { id: number; rack: THREE.Object3D; label: THREE.Mesh | null; state: string }[] = [];
+    const syncRackVisual = (visual: typeof rackVisuals[number], state: string) => {
+      if (visual.state === state) return;
+      visual.state = state;
+      visual.rack.traverse((object) => {
+        if (object instanceof THREE.Light) object.visible = state !== "offline";
+        if (!(object instanceof THREE.Mesh)) return;
+        const material = Array.isArray(object.material) ? object.material[0] : object.material;
+        const baseColor = object.userData.baseColor as THREE.Color | undefined;
+        const baseEmissive = object.userData.baseEmissive as THREE.Color | undefined;
+        if (baseColor && "color" in material) {
+          (material as THREE.MeshStandardMaterial).color.copy(baseColor);
+          if (state === "offline") (material as THREE.MeshStandardMaterial).color.multiplyScalar(0.38);
+        }
+        if (baseEmissive && "emissive" in material) {
+          (material as THREE.MeshStandardMaterial).emissive.copy(baseEmissive);
+          if (state === "offline") (material as THREE.MeshStandardMaterial).emissive.set("#050607");
+          if ("emissiveIntensity" in material) (material as THREE.MeshStandardMaterial).emissiveIntensity = state === "offline" ? 0 : 1;
+        }
+      });
+      if (visual.label) {
+        const canvas = visual.label.userData.labelCanvas as HTMLCanvasElement;
+        const context = canvas.getContext("2d");
+        if (context) {
+          const color = { online: "#42f59b", ready: "#ffd34f", warning: "#ff5f67", offline: "#b2bdc4" }[state] ?? "#b2bdc4";
+          context.clearRect(0, 0, canvas.width, canvas.height);
+          context.fillStyle = "rgba(18,25,30,.78)";
+          context.fillRect(7, 7, 242, 114);
+          context.strokeStyle = color;
+          context.lineWidth = 3;
+          context.strokeRect(8.5, 8.5, 239, 111);
+          context.fillStyle = color;
+          context.font = 'bold 66px "Gotham Black", Arial';
+          context.textAlign = "center";
+          context.textBaseline = "middle";
+          context.fillText(`${visual.id}`, 128, 66);
+          if (state === "offline") {
+            context.strokeStyle = "#ff4f5e";
+            context.lineWidth = 11;
+            context.lineCap = "round";
+            context.beginPath();
+            context.moveTo(42, 24);
+            context.lineTo(214, 106);
+            context.moveTo(214, 24);
+            context.lineTo(42, 106);
+            context.stroke();
+          }
+          (visual.label.userData.labelTexture as THREE.CanvasTexture).needsUpdate = true;
+        }
+      }
+    };
     const raycaster = new THREE.Raycaster();
     const pointer = new THREE.Vector2();
     const loader = new GLTFLoader();
@@ -233,24 +286,21 @@ export default function Dashboard() {
         warning: "#ff5f67",
         offline: "#b2bdc4",
       };
-      const makeTopLabel = (node: typeof nodes[number], width: number, depth: number) => {
-        const canvas = document.createElement("canvas");
-        canvas.width = 256;
-        canvas.height = 128;
+      const drawTopLabel = (canvas: HTMLCanvasElement, id: number, state: string) => {
         const context = canvas.getContext("2d");
-        if (!context) return null;
+        if (!context) return;
         context.clearRect(0, 0, canvas.width, canvas.height);
         context.fillStyle = "rgba(18,25,30,.78)";
         context.fillRect(7, 7, 242, 114);
-        context.strokeStyle = statusColors[node.state];
+        context.strokeStyle = statusColors[state] ?? statusColors.ready;
         context.lineWidth = 3;
         context.strokeRect(8.5, 8.5, 239, 111);
-        context.fillStyle = statusColors[node.state];
+        context.fillStyle = statusColors[state] ?? statusColors.ready;
         context.font = 'bold 66px "Gotham Black", Arial';
         context.textAlign = "center";
         context.textBaseline = "middle";
-        context.fillText(`${node.id}`, 128, 66);
-        if (node.state === "offline") {
+        context.fillText(`${id}`, 128, 66);
+        if (state === "offline") {
           context.strokeStyle = "#ff4f5e";
           context.lineWidth = 11;
           context.lineCap = "round";
@@ -261,6 +311,12 @@ export default function Dashboard() {
           context.lineTo(42, 106);
           context.stroke();
         }
+      };
+      const makeTopLabel = (node: typeof nodes[number], width: number, depth: number) => {
+        const canvas = document.createElement("canvas");
+        canvas.width = 256;
+        canvas.height = 128;
+        drawTopLabel(canvas, node.id, node.state);
         const texture = new THREE.CanvasTexture(canvas);
         texture.colorSpace = THREE.SRGBColorSpace;
         const label = new THREE.Mesh(
@@ -268,6 +324,8 @@ export default function Dashboard() {
           new THREE.MeshBasicMaterial({ map: texture, transparent: true, depthWrite: false, side: THREE.DoubleSide })
         );
         label.rotation.x = -Math.PI / 2;
+        label.userData.labelCanvas = canvas;
+        label.userData.labelTexture = texture;
         return label;
       };
       for (let index = 0; index < nodes.length; index += 1) {
@@ -289,10 +347,9 @@ export default function Dashboard() {
             object.receiveShadow = true;
             if (object.material instanceof THREE.Material) {
               object.material = object.material.clone();
-              if (node.state === "offline" && "color" in object.material) {
-                (object.material as THREE.MeshStandardMaterial).color.multiplyScalar(0.38);
-                if ("emissive" in object.material) (object.material as THREE.MeshStandardMaterial).emissive.set("#050607");
-              }
+              const material = object.material as THREE.MeshStandardMaterial;
+              if ("color" in material) object.userData.baseColor = material.color.clone();
+              if ("emissive" in material) object.userData.baseEmissive = material.emissive.clone();
             }
           }
         });
@@ -302,6 +359,7 @@ export default function Dashboard() {
           scene.add(label);
         }
         scene.add(rack);
+        rackVisuals.push({ id: node.id, rack, label, state: "" });
       }
 
       const rackXPositions = Array.from({ length: 6 }, (_, column) =>
@@ -410,6 +468,10 @@ export default function Dashboard() {
     resize();
     const render = () => {
       if (disposed) return;
+        rackVisuals.forEach((visual) => {
+          const liveNode = telemetryRef.current.find((node) => node.id === visual.id);
+          syncRackVisual(visual, liveNode?.state ?? nodes[visual.id - 1].state);
+        });
       controls.update();
       powerPulses.forEach(({ mesh, curve, offset }) => {
         const t = ((performance.now() * 0.00028 + offset) % 1);
@@ -465,7 +527,7 @@ export default function Dashboard() {
         <div className="room-legend"><span><i className="legend-online" /> ACTIVE</span><span><i className="legend-ready" /> READY</span><span><i className="legend-warning" /> MIGRATING</span><span><i className="legend-offline" /> OFFLINE / LIGHTS OFF</span></div>
          <div className="cluster-tabs">{Array.from({ length: 6 }, (_, cluster) => <button key={cluster} className={selectedCluster === cluster ? "active" : ""} onClick={() => setSelectedCluster(cluster)}>CLUSTER {String(cluster + 1).padStart(2, "0")} <small>{clusterNodeIds(cluster).join(" · ")}</small></button>)}</div>
          <div className="cluster-overview-card glass">
-           <div className="cluster-overview-head"><div><span className="telemetry-panel-kicker">CLUSTER {String(selectedCluster + 1).padStart(2, "0")} / COMBINED TELEMETRY</span><h2>CLUSTER STATUS</h2></div><button className="emergency-button" onClick={() => { setShutdownNotice(`Emergency shutdown armed for Cluster ${String(selectedCluster + 1).padStart(2, "0")}. Tasks will be drained before power down.`); }}>EMERGENCY SHUTDOWN</button></div>
+            <div className="cluster-overview-head"><div><span className="telemetry-panel-kicker">CLUSTER {String(selectedCluster + 1).padStart(2, "0")} / COMBINED TELEMETRY</span><h2>CLUSTER STATUS</h2></div><button className="emergency-button" onClick={() => { shutdownCluster(selectedCluster); setShutdownNotice(`Emergency shutdown completed for Cluster ${String(selectedCluster + 1).padStart(2, "0")}. Rack lights disabled.`); }}>EMERGENCY SHUTDOWN</button></div>
            <div className="cluster-overview-metrics">
               <MetricBar label="CPU" value={clusterTotals.cpu / 10} valueText={clusterDisplay.cpu} />
               <MetricBar label="GPU" value={clusterTotals.gpu / 10} valueText={clusterDisplay.gpu} />
