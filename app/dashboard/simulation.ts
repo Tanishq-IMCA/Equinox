@@ -66,6 +66,17 @@ function metrics(node: RuntimeNode): Omit<NodeTelemetry, "id" | "cluster" | "sta
   return { cpu: clamp(cpu), ram: clamp(ram), gpu: clamp(gpu), gpuMemory: clamp(gpuMemory), power: clamp(power), temperature, };
 }
 
+export function formatTelemetry(telemetry: NodeTelemetry) {
+  return {
+    cpu: `${telemetry.cpu.toFixed(1)} / 100%`,
+    gpu: `${telemetry.gpu.toFixed(1)} / 100%`,
+    ram: `${(telemetry.ram * 1.2).toFixed(1)} / 120 GB`,
+    gpuMemory: `${(telemetry.gpuMemory * 0.6).toFixed(1)} / 60 GB`,
+    power: `${(telemetry.power * 0.192).toFixed(2)} / 19.2 kW`,
+    temperature: `${telemetry.temperature.toFixed(1)} / 100°C`,
+  };
+}
+
 function canAccept(node: RuntimeNode, task: TaskTemplate) {
   const current = metrics(node);
   return current.cpu + task.cpu <= 80 && current.ram + task.ram / 1200 <= 80 &&

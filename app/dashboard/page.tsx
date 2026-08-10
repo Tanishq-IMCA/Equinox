@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
-import { clusterNodeIds, useSimulation, type LiveTask, type NodeTelemetry } from "./simulation";
+import { clusterNodeIds, formatTelemetry, useSimulation, type LiveTask, type NodeTelemetry } from "./simulation";
 
 const nodes = Array.from({ length: 60 }, (_, i) => ({
   id: i + 1,
@@ -16,10 +16,10 @@ function metricTone(value: number) {
   return value >= 80 ? "critical" : value >= 50 ? "elevated" : "nominal";
 }
 
-function MetricBar({ label, value, unit = "%" }: { label: string; value: number; unit?: string }) {
+function MetricBar({ label, value, unit = "%", valueText }: { label: string; value: number; unit?: string; valueText?: string }) {
   const tone = metricTone(value);
   return <div className="telemetry-metric">
-    <div className="telemetry-metric-head"><span>{label}</span><b className={tone}>{value.toFixed(1)}{unit}</b></div>
+    <div className="telemetry-metric-head"><span>{label}</span><b className={tone}>{valueText ?? `${value.toFixed(1)}${unit}`}</b></div>
     <div className={`telemetry-bar ${tone}`}><i style={{ width: `${Math.min(100, value)}%` }} /></div>
   </div>;
 }
@@ -33,16 +33,17 @@ function TaskRow({ task, nodeId, onTerminate }: { task: LiveTask; nodeId: number
 }
 
 function TelemetryPanel({ telemetry, onTerminate, compact = false }: { telemetry: NodeTelemetry; onTerminate: (nodeId: number, uid: string) => void; compact?: boolean }) {
+  const display = formatTelemetry(telemetry);
   return <div className={`telemetry-panel glass ${compact ? "is-compact" : ""}`}>
     <div className="telemetry-panel-kicker">NODE {String(telemetry.id).padStart(2, "0")} / CLUSTER {String(telemetry.cluster + 1).padStart(2, "0")}</div>
     <div className="telemetry-panel-title"><h2>NODE TELEMETRY</h2><span className={`telemetry-state ${telemetry.state}`}>{telemetry.state}</span></div>
     <div className="telemetry-metrics">
-      <MetricBar label="CPU" value={telemetry.cpu} />
-      <MetricBar label="GPU" value={telemetry.gpu} />
-      <MetricBar label="RAM" value={telemetry.ram} />
-      <MetricBar label="VRAM" value={telemetry.gpuMemory} />
-      <MetricBar label="POWER" value={telemetry.power} />
-      <MetricBar label="TEMP" value={telemetry.temperature} unit="°" />
+      <MetricBar label="CPU" value={telemetry.cpu} valueText={display.cpu} />
+      <MetricBar label="GPU" value={telemetry.gpu} valueText={display.gpu} />
+      <MetricBar label="RAM" value={telemetry.ram} valueText={display.ram} />
+      <MetricBar label="VRAM" value={telemetry.gpuMemory} valueText={display.gpuMemory} />
+      <MetricBar label="POWER" value={telemetry.power} valueText={display.power} />
+      <MetricBar label="TEMP" value={telemetry.temperature} valueText={display.temperature} />
     </div>
     <div className="process-heading"><span>PROCESSES</span><b>{telemetry.tasks.length} ACTIVE</b></div>
     <div className="process-list">{telemetry.tasks.slice(0, compact ? 4 : 8).map((task) => <TaskRow key={task.uid} task={task} nodeId={telemetry.id} onTerminate={onTerminate} />)}</div>
@@ -55,7 +56,7 @@ function ClusterPanel({ cluster, telemetry, onTerminate }: { cluster: number; te
   return <div className="cluster-panel glass">
     <div className="cluster-panel-head">
       <div><span className="telemetry-panel-kicker">CLUSTER {String(cluster + 1).padStart(2, "0")} / ISOLATED TASK DOMAIN</span><h2>CLUSTER TASK MANAGER</h2></div>
-      <span className="cluster-capacity">{tasks.length} PROCESSES / {clusterNodes.reduce((sum, node) => sum + node.power, 0).toFixed(0)}% POWER</span>
+      <span className="cluster-capacity">{tasks.length} PROCESSES / {clusterNodes.reduce((sum, node) => sum + node.power * 0.192, 0).toFixed(2)} / 192 kW</span>
     </div>
     <div className="cluster-server-strip">{clusterNodes.map((node) => <div className="cluster-server" key={node.id}><span>NODE {String(node.id).padStart(2, "0")}</span><b>{node.tasks.length}</b><i className={metricTone(Math.max(node.cpu, node.ram, node.gpu, node.power))} /></div>)}</div>
     <div className="cluster-task-list">{tasks.slice(0, 12).map(({ task, nodeId }) => <TaskRow key={task.uid} task={task} nodeId={nodeId} onTerminate={onTerminate} />)}</div>
@@ -70,8 +71,25 @@ export default function Dashboard() {
   const [switching, setSwitching] = useState(false);
   const [hoveredNode, setHoveredNode] = useState<number | null>(null);
   const [selectedCluster, setSelectedCluster] = useState(5);
+  const [shutdownNotice, setShutdownNotice] = useState("");
   const sceneHost = useRef<HTMLDivElement>(null);
   const { telemetry, logs, notice, terminateTask } = useSimulation();
+  const selectedClusterNodes = telemetry.filter((node) => node.cluster === selectedCluster);
+  const clusterTotals = {
+    cpu: selectedClusterNodes.reduce((sum, node) => sum + node.cpu, 0),
+    gpu: selectedClusterNodes.reduce((sum, node) => sum + node.gpu, 0),
+    ram: selectedClusterNodes.reduce((sum, node) => sum + node.ram, 0),
+    gpuMemory: selectedClusterNodes.reduce((sum, node) => sum + node.gpuMemory, 0),
+    power: selectedClusterNodes.reduce((sum, node) => sum + node.power, 0),
+    temperature: selectedClusterNodes.length ? Math.max(...selectedClusterNodes.map((node) => node.temperature)) : 0,
+  };
+  const clusterOverview: NodeTelemetry = {
+    id: selectedClusterNodes[0]?.id ?? 1,
+    cluster: selectedCluster,
+    state: "cluster",
+    ...clusterTotals,
+    tasks: selectedClusterNodes.flatMap((node) => node.tasks),
+  };
 
   useEffect(() => {
     if (localStorage.getItem("equinox-auth") !== "active") router.replace("/login");
@@ -434,10 +452,21 @@ export default function Dashboard() {
         </div>
         <div className="room-legend"><span><i className="legend-online" /> ACTIVE</span><span><i className="legend-ready" /> READY</span><span><i className="legend-warning" /> MIGRATING</span><span><i className="legend-offline" /> OFFLINE / LIGHTS OFF</span></div>
          <div className="cluster-tabs">{Array.from({ length: 6 }, (_, cluster) => <button key={cluster} className={selectedCluster === cluster ? "active" : ""} onClick={() => setSelectedCluster(cluster)}>CLUSTER {String(cluster + 1).padStart(2, "0")} <small>{clusterNodeIds(cluster).join(" · ")}</small></button>)}</div>
-         <ClusterPanel cluster={selectedCluster} telemetry={telemetry} onTerminate={terminateTask} />
+         <div className="cluster-overview-card glass">
+           <div className="cluster-overview-head"><div><span className="telemetry-panel-kicker">CLUSTER {String(selectedCluster + 1).padStart(2, "0")} / COMBINED TELEMETRY</span><h2>CLUSTER STATUS</h2></div><button className="emergency-button" onClick={() => { setShutdownNotice(`Emergency shutdown armed for Cluster ${String(selectedCluster + 1).padStart(2, "0")}. Tasks will be drained before power down.`); }}>EMERGENCY SHUTDOWN</button></div>
+           <div className="cluster-overview-metrics">
+             <MetricBar label={`CPU ${clusterTotals.cpu.toFixed(1)} / 1000%`} value={clusterTotals.cpu / 10} unit="" />
+             <MetricBar label={`GPU ${clusterTotals.gpu.toFixed(1)} / 1000%`} value={clusterTotals.gpu / 10} unit="" />
+             <MetricBar label={`RAM ${(clusterTotals.ram * 1.2).toFixed(1)} / 1200 GB`} value={clusterTotals.ram / 10} unit="" />
+             <MetricBar label={`VRAM ${(clusterTotals.gpuMemory * 0.6).toFixed(1)} / 600 GB`} value={clusterTotals.gpuMemory / 10} unit="" />
+             <MetricBar label={`POWER ${(clusterTotals.power * 0.192).toFixed(2)} / 192 kW`} value={clusterTotals.power / 10} unit="" />
+             <MetricBar label={`PEAK TEMP ${clusterTotals.temperature.toFixed(1)} / 100°C`} value={clusterTotals.temperature} unit="" />
+           </div>
+           {shutdownNotice && <p className="shutdown-notice">{shutdownNotice}</p>}
+         </div>
          {notice && <div className="telemetry-notice" role="status">{notice}</div>}
       </div>}
-      {visiblePage === "Live Workflow" && <div className="empty-page"><p className="eyebrow">WORKSPACE / 02</p><h1>LIVE<br /><span className="accent">WORKFLOW.</span></h1><p>Workflow stream will appear here when the live data connection is enabled.</p></div>}
+       {visiblePage === "Live Workflow" && <div className="workflow-page"><div className="dashboard-intro"><p className="eyebrow">WORKSPACE / 02</p><h1>LIVE <span className="accent">WORKFLOW.</span></h1><p>Detailed cluster telemetry and task operations across the six isolated server domains.</p></div><div className="workflow-cluster-tabs">{Array.from({ length: 6 }, (_, cluster) => <button key={cluster} className={selectedCluster === cluster ? "active" : ""} onClick={() => setSelectedCluster(cluster)}>CLUSTER {String(cluster + 1).padStart(2, "0")}<small>{clusterNodeIds(cluster).join(" · ")}</small></button>)}</div><ClusterPanel cluster={selectedCluster} telemetry={telemetry} onTerminate={terminateTask} /><div className="workflow-node-grid">{selectedClusterNodes.map((node) => <TelemetryPanel key={node.id} telemetry={node} onTerminate={terminateTask} />)}</div></div>}
        {visiblePage === "Logs" && <div className="logs-page"><p className="eyebrow">WORKSPACE / 03</p><h1>SYSTEM<br /><span className="accent">LOGS.</span></h1><div className="logs-panel glass">{logs.map((log, index) => <div className="log-row" key={`${log.time}-${index}`}><time>{log.time}</time><b>{log.kind}</b><span>{log.message}</span></div>)}</div></div>}
     </section>
   </main>;
