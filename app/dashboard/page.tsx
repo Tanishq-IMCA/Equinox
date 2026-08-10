@@ -9,7 +9,7 @@ import { clusterNodeIds, formatTelemetry, useSimulation, type LiveTask, type Nod
 
 const nodes = Array.from({ length: 60 }, (_, i) => ({
   id: i + 1,
-  state: [8, 21, 27].includes(i + 1) ? "offline" : i === 7 || i === 18 ? "warning" : i % 4 === 0 ? "ready" : "online",
+  state: "low",
 }));
 
 function metricTone(value: number) {
@@ -92,7 +92,7 @@ export default function Dashboard() {
   const [selectedCluster, setSelectedCluster] = useState(5);
   const [shutdownNotice, setShutdownNotice] = useState("");
   const sceneHost = useRef<HTMLDivElement>(null);
-  const { telemetry, logs, notice, terminateTask, powerCluster, autonomous, setAutonomousMode } = useSimulation();
+  const { telemetry, logs, notice, terminateTask, powerCluster, powerAllServers, autonomous, queuedTasks, setAutonomousMode } = useSimulation();
   const telemetryRef = useRef(telemetry);
   telemetryRef.current = telemetry;
   const selectedClusterNodes = telemetry.filter((node) => node.cluster === selectedCluster);
@@ -244,7 +244,7 @@ export default function Dashboard() {
         const canvas = visual.label.userData.labelCanvas as HTMLCanvasElement;
         const context = canvas.getContext("2d");
         if (context) {
-          const color = { online: "#42f59b", ready: "#ffd34f", warning: "#ff5f67", starting: "#42f59b", stopping: "#ff5f67", offline: "#b2bdc4" }[state] ?? "#b2bdc4";
+          const color = { low: "#42f59b", medium: "#facc15", high: "#ff5f67", starting: "#6ee7b7", stopping: "#fb7185", offline: "#b2bdc4" }[state] ?? "#b2bdc4";
           context.clearRect(0, 0, canvas.width, canvas.height);
           context.fillStyle = "rgba(18,25,30,.78)";
           context.fillRect(7, 7, 242, 114);
@@ -287,9 +287,11 @@ export default function Dashboard() {
       const rowGap = 0.2;
       const rackOriginZ = 1.2;
       const statusColors: Record<string, string> = {
-        online: "#42f59b",
-        ready: "#ffd34f",
-        warning: "#ff5f67",
+        low: "#42f59b",
+        medium: "#facc15",
+        high: "#ff5f67",
+        starting: "#6ee7b7",
+        stopping: "#fb7185",
         offline: "#b2bdc4",
       };
       const drawTopLabel = (canvas: HTMLCanvasElement, id: number, state: string) => {
@@ -298,10 +300,10 @@ export default function Dashboard() {
         context.clearRect(0, 0, canvas.width, canvas.height);
         context.fillStyle = "rgba(18,25,30,.78)";
         context.fillRect(7, 7, 242, 114);
-        context.strokeStyle = statusColors[state] ?? statusColors.ready;
+        context.strokeStyle = statusColors[state] ?? statusColors.offline;
         context.lineWidth = 3;
         context.strokeRect(8.5, 8.5, 239, 111);
-        context.fillStyle = statusColors[state] ?? statusColors.ready;
+        context.fillStyle = statusColors[state] ?? statusColors.offline;
         context.font = 'bold 66px "Gotham Black", Arial';
         context.textAlign = "center";
         context.textBaseline = "middle";
@@ -498,14 +500,14 @@ export default function Dashboard() {
           const clusterNodes = telemetryRef.current.filter((node) => node.cluster === cluster);
           const activeRatio = cluster === null
             ? 1
-            : clusterNodes.filter((node) => ["online", "ready", "warning"].includes(node.state)).length / Math.max(clusterNodes.length, 1);
+            : clusterNodes.filter((node) => ["low", "medium", "high"].includes(node.state)).length / Math.max(clusterNodes.length, 1);
           (line.material as THREE.MeshBasicMaterial).opacity = 0.92 * activeRatio;
           line.visible = activeRatio > 0;
         });
       controls.update();
       powerPulses.forEach(({ mesh, curve, offset, cluster }) => {
         const clusterNodes = cluster === null ? [] : telemetryRef.current.filter((node) => node.cluster === cluster);
-        const active = cluster === null || clusterNodes.some((node) => ["online", "ready", "warning"].includes(node.state));
+        const active = cluster === null || clusterNodes.some((node) => ["low", "medium", "high"].includes(node.state));
         mesh.visible = active;
         const t = ((performance.now() * 0.00028 + offset) % 1);
         mesh.position.copy(curve.getPointAt(t));
@@ -554,12 +556,12 @@ export default function Dashboard() {
     <section className={`dashboard-content ${switching ? "is-switching" : ""}`}>
       {visiblePage === "Overview" && <div className="overview-page">
         <div className="dashboard-intro"><p className="eyebrow">AUTONOMOUS ENERGY SYSTEMS / 02</p><h1>CLUSTER <span className="accent">OVERVIEW.</span></h1><p>Thirty nodes. One adaptive system. Watch workload migration, thermal awareness, and power efficiency in real time.</p></div>
-          <div className="overview-tools"><span className="room-status"><i /> ROOM A / 60 NODES</span><span>HOVER A RACK FOR TELEMETRY</span><span>DRAG TO ROTATE</span><span>SCROLL TO ZOOM</span><button className={`autonomous-toggle ${autonomous ? "active" : ""}`} onClick={() => setAutonomousMode(!autonomous)}>AUTONOMOUS: {autonomous ? "ON" : "OFF"}</button></div>
+          <div className="overview-tools"><span className="room-status"><i /> ROOM A / 60 NODES</span><span>HOVER A RACK FOR TELEMETRY</span><span>DRAG TO ROTATE</span><span>SCROLL TO ZOOM</span>{autonomous && <span className="autonomous-queue">QUEUE {queuedTasks}</span>}<button className={`autonomous-toggle ${autonomous ? "active" : ""}`} onClick={() => setAutonomousMode(!autonomous)}>AUTONOMOUS: {autonomous ? "ON" : "OFF"}</button><button className="power-all-toggle" onClick={powerAllServers} disabled={autonomous}>POWER ALL</button></div>
         <div className="rack-window glass">
           <div className="window-top"><span className="dot red" /><span className="dot yellow" /><span className="dot green" /><span className="window-label">LIVE NODE TELEMETRY / STANDBY</span></div>
            <div className="room-viewport"><div className="rack-canvas-host" ref={sceneHost} />{hoveredTelemetry && <div className="hover-telemetry" onPointerDown={(event) => event.stopPropagation()}><TelemetryPanel telemetry={hoveredTelemetry} onTerminate={terminateTask} compact /></div>}</div>
         </div>
-        <div className="room-legend"><span><i className="legend-online" /> ACTIVE</span><span><i className="legend-ready" /> READY</span><span><i className="legend-warning" /> MIGRATING</span><span><i className="legend-offline" /> OFFLINE / LIGHTS OFF</span></div>
+        <div className="room-legend"><span><i className="legend-online" /> LOW</span><span><i className="legend-medium" /> MEDIUM</span><span><i className="legend-warning" /> HIGH</span><span><i className="legend-offline" /> OFFLINE / LIGHTS OFF</span></div>
          <div className="cluster-tabs">{Array.from({ length: 6 }, (_, cluster) => <button key={cluster} className={selectedCluster === cluster ? "active" : ""} onClick={() => setSelectedCluster(cluster)}>CLUSTER {String(cluster + 1).padStart(2, "0")} <small>{clusterNodeIds(cluster).join(" · ")}</small></button>)}</div>
          <div className="cluster-overview-card glass">
              <div className="cluster-overview-head"><div><span className="telemetry-panel-kicker">CLUSTER {String(selectedCluster + 1).padStart(2, "0")} / COMBINED TELEMETRY</span><h2>CLUSTER STATUS</h2></div><button className="emergency-button" onClick={() => powerCluster(selectedCluster)}>POWER {selectedClusterNodes.every((node) => node.state === "offline") ? "UP" : "DOWN"} / SEQUENTIAL</button></div>

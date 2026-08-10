@@ -60,7 +60,6 @@ type RuntimeNode = {
 const clamp = (value: number, min = 0, max = 100) => Math.min(max, Math.max(min, value));
 const average = (items: number[]) => items.length ? items.reduce((sum, value) => sum + value, 0) / items.length : 0;
 const nowLabel = () => new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
-const initiallyOffline = new Set([8, 21, 27]);
 
 function metrics(node: RuntimeNode): Omit<NodeTelemetry, "id" | "cluster" | "state" | "tasks"> {
   const tasks = node.tasks;
@@ -84,6 +83,13 @@ function temperatureTarget(node: RuntimeNode) {
   if (!node.tasks.length) return 30;
   const taskHeat = average(node.tasks.map((task) => task.temperature));
   return clamp(24 + taskHeat * 0.58 + Math.min(node.tasks.length, 6) * 0.8, 28, 92);
+}
+
+function loadState(node: RuntimeNode) {
+  if (node.powerAction === "starting") return "starting";
+  if (node.powerAction === "stopping" || node.offline) return "offline";
+  const load = Math.max(node.tasks.reduce((sum, task) => sum + task.cpu, 0), node.tasks.reduce((sum, task) => sum + task.gpu, 0), metrics(node).ram, metrics(node).gpuMemory, metrics(node).power);
+  return load >= 70 ? "high" : load >= 35 ? "medium" : "low";
 }
 
 export function formatTelemetry(telemetry: NodeTelemetry) {
@@ -131,15 +137,16 @@ export function useSimulation() {
   const runtime = useRef<RuntimeNode[]>(Array.from({ length: 60 }, (_, index) => ({
     id: index + 1,
     tasks: [],
-    offline: initiallyOffline.has(index + 1),
-    temperature: initiallyOffline.has(index + 1) ? 0 : 30,
+    offline: false,
+    temperature: 30,
   })));
   const catalog = useRef<TaskTemplate[]>([]);
   const sequence = useRef(0);
   const powerTimers = useRef<number[]>([]);
-  const pendingAutonomousTasks = useRef<TaskTemplate[]>([]);
-  const autonomousCursor = useRef(0);
+  const pendingAutonomousTasks = useRef<LiveTask[]>([]);
   const autonomousRef = useRef(false);
+  const autonomousReady = useRef(false);
+  const autonomousStarting = useRef(false);
   const [, redraw] = useState(0);
   const [autonomous, setAutonomous] = useState(false);
   const [logs, setLogs] = useState<SimulationLog[]>([{ time: nowLabel(), kind: "ENGINE", message: "Telemetry engine initialized across six isolated clusters." }]);
@@ -150,7 +157,6 @@ export function useSimulation() {
   useEffect(() => {
     fetch("/api/tasks").then((response) => response.json()).then((tasks: TaskTemplate[]) => { catalog.current = tasks; }).catch(() => addLog("NOTICE", "Task library unavailable; running the safe local baseline."));
     runtime.current.forEach((node) => {
-      if (node.offline) return;
       for (let count = 0; count < 4; count += 1) {
         const template = pickTemplate(catalog.current);
         if (canAccept(node, template)) node.tasks.push(makeTask(template, sequence.current++));
@@ -189,9 +195,18 @@ export function useSimulation() {
           }
         }
       });
-      if (autonomousRef.current && intakeDue) {
-        pendingAutonomousTasks.current.push(pickTemplate(catalog.current));
+      if (autonomousRef.current && autonomousReady.current && intakeDue) {
+        pendingAutonomousTasks.current.push(makeTask(pickTemplate(catalog.current), sequence.current++));
         dispatchAutonomousWork();
+      } else if (!autonomousRef.current && intakeDue) {
+        consolidateNormalCapacity();
+      }
+      if (autonomousRef.current && autonomousReady.current) {
+        const runningTasks = runtime.current.reduce((sum, node) => sum + node.tasks.length, 0);
+        if (!runningTasks && !pendingAutonomousTasks.current.length) {
+          pendingAutonomousTasks.current.push(makeTask(pickTemplate(catalog.current), sequence.current++));
+          dispatchAutonomousWork();
+        }
       }
       if (intakeDue) lastIntakeAt = current;
       redraw((value) => value + 1);
@@ -209,7 +224,7 @@ export function useSimulation() {
     return {
       id: node.id,
       cluster: clusterForNode(node.id),
-      state: node.powerAction ?? (node.offline ? "offline" : node.tasks.length ? "online" : "ready"),
+      state: loadState(node),
       ...values,
       tasks: node.tasks,
     };
@@ -240,8 +255,26 @@ export function useSimulation() {
       window.setTimeout(() => setNotice(""), 5200);
       return;
     }
+    const activeTargets = targets.filter((node) => !node.offline && !node.powerAction);
+    if (!shouldStart) {
+      const blocked = activeTargets.filter((source) => {
+        if (!source.tasks.length) return false;
+        const peers = activeTargets.filter((candidate) => candidate !== source);
+        const target = peers.find((candidate) => canAcceptAll(candidate, source.tasks));
+        return !target;
+      });
+      activeTargets.forEach((source) => {
+        if (!source.tasks.length) return;
+        const target = activeTargets.find((candidate) => candidate !== source && canAcceptAll(candidate, source.tasks));
+        if (target) moveTasks(source, target);
+      });
+      if (blocked.length) {
+        setNotice(`Cluster ${String(cluster + 1).padStart(2, "0")} kept ${blocked.length} node(s) online because their tasks could not be transferred safely.`);
+      }
+    }
     targets.forEach((node, index) => {
       if (node.powerAction || (shouldStart ? !node.offline : node.offline)) return;
+      if (!shouldStart && node.tasks.length) return;
       node.powerAction = shouldStart ? "starting" : "stopping";
       const timer = window.setTimeout(() => {
         if (shouldStart) {
@@ -251,7 +284,6 @@ export function useSimulation() {
           addLog("POWER", `Node ${node.id} started in Cluster ${String(cluster + 1).padStart(2, "0")}.`);
         } else {
           node.offline = true;
-          node.tasks = [];
           node.powerAction = undefined;
           addLog("POWER", `Node ${node.id} shut down in Cluster ${String(cluster + 1).padStart(2, "0")}.`);
         }
@@ -267,25 +299,104 @@ export function useSimulation() {
     window.setTimeout(() => setNotice(""), 5200);
   }
 
+  function powerAllServers() {
+    if (autonomousRef.current) return;
+    let startingCount = 0;
+    runtime.current.forEach((node, index) => {
+      if (!node.offline || node.powerAction) return;
+      startingCount += 1;
+      node.powerAction = "starting";
+      const timer = window.setTimeout(() => {
+        node.offline = false;
+        node.powerAction = undefined;
+        node.temperature = Math.max(node.temperature, 0);
+        addLog("POWER", `Node ${node.id} started during full-capacity restore.`);
+        redraw((value) => value + 1);
+      }, index * 500);
+      powerTimers.current.push(timer);
+    });
+    if (pendingAutonomousTasks.current.length) {
+      window.setTimeout(() => {
+        const active = runtime.current.filter((node) => !node.offline && !node.powerAction);
+        while (pendingAutonomousTasks.current.length) {
+          const task = pendingAutonomousTasks.current[0];
+          const target = active.find((node) => canAccept(node, task));
+          if (!target) break;
+          target.tasks.push(task);
+          pendingAutonomousTasks.current.shift();
+        }
+        redraw((value) => value + 1);
+      }, Math.max(startingCount * 500 + 250, 500));
+    }
+    addLog("POWER", "Full-capacity mode requested. Starting offline nodes sequentially.");
+    redraw((value) => value + 1);
+  }
+
+  function canAcceptAll(target: RuntimeNode, tasks: LiveTask[]) {
+    let projected = { ...target, tasks: [...target.tasks] };
+    return tasks.every((task) => {
+      if (!canAccept(projected, task)) return false;
+      projected.tasks.push(task);
+      return true;
+    });
+  }
+
+  function moveTasks(source: RuntimeNode, target: RuntimeNode) {
+    const tasks = [...source.tasks];
+    if (!tasks.length || source === target || target.offline || target.powerAction) return false;
+    if (!canAcceptAll(target, tasks)) return false;
+    target.tasks.push(...source.tasks);
+    source.tasks = [];
+    return true;
+  }
+
+  function schedulePowerDown(node: RuntimeNode, delay: number) {
+    if (node.offline || node.powerAction) return;
+    node.powerAction = "stopping";
+    const timer = window.setTimeout(() => {
+      node.offline = true;
+      node.powerAction = undefined;
+      addLog("POWER", `Node ${node.id} powered down after workload consolidation.`);
+      redraw((value) => value + 1);
+    }, delay);
+    powerTimers.current.push(timer);
+  }
+
+  function consolidateNormalCapacity() {
+    const active = runtime.current.filter((node) => !node.offline && !node.powerAction && node.tasks.length);
+    const candidates = active.filter((node) => loadState(node) === "low").sort((a, b) => a.tasks.length - b.tasks.length);
+    for (const source of candidates) {
+      const target = active.find((node) => node !== source && canAcceptAll(node, source.tasks) && loadState(node) !== "high");
+      if (target) {
+        moveTasks(source, target);
+        addLog("POWER", `Moved ${source.tasks.length || "idle"} workload from node ${source.id} to node ${target.id}; saving power.`);
+        schedulePowerDown(source, 500);
+        redraw((value) => value + 1);
+        return;
+      }
+    }
+  }
+
   function dispatchAutonomousWork() {
+    if (!autonomousReady.current || autonomousStarting.current) return;
     while (pendingAutonomousTasks.current.length) {
       const task = pendingAutonomousTasks.current[0];
       const target = runtime.current.find((node) => !node.offline && !node.powerAction && canAccept(node, task));
       if (target) {
-        target.tasks.push(makeTask(task, sequence.current++));
+        target.tasks.push(task);
         pendingAutonomousTasks.current.shift();
         addLog("AUTONOMOUS", `Assigned ${task.name} to node ${target.id}.`);
         continue;
       }
-      const nextNode = runtime.current
-        .filter((node) => node.offline && !node.powerAction)
-        .sort((a, b) => a.id - b.id)[autonomousCursor.current++];
+      const nextNode = runtime.current.find((node) => node.offline && !node.powerAction);
       if (!nextNode) return;
+      autonomousStarting.current = true;
       nextNode.powerAction = "starting";
       window.setTimeout(() => {
         nextNode.offline = false;
         nextNode.powerAction = undefined;
         nextNode.temperature = Math.max(nextNode.temperature, 0);
+        autonomousStarting.current = false;
         addLog("AUTONOMOUS", `Activated node ${nextNode.id} for queued work.`);
         dispatchAutonomousWork();
         redraw((value) => value + 1);
@@ -299,12 +410,16 @@ export function useSimulation() {
     autonomousRef.current = enabled;
     setAutonomous(enabled);
     pendingAutonomousTasks.current = [];
-    autonomousCursor.current = 0;
     if (!enabled) {
+      autonomousReady.current = false;
+      autonomousStarting.current = false;
+      powerAllServers();
       addLog("AUTONOMOUS", "Autonomous capacity control disabled.");
     return;
     }
+    autonomousReady.current = false;
     runtime.current.forEach((node, index) => {
+      pendingAutonomousTasks.current.push(...node.tasks);
       node.tasks = [];
       if (node.offline) {
         node.temperature = 0;
@@ -317,11 +432,29 @@ export function useSimulation() {
         redraw((value) => value + 1);
       }, index * 500);
     });
-    addLog("AUTONOMOUS", "Autonomous mode engaged. Draining all nodes before demand-based activation.");
-    setNotice("AUTONOMOUS MODE: all nodes powering down; capacity will follow demand.");
+    const activeCount = runtime.current.filter((node) => node.powerAction === "stopping").length;
+    const startDelay = Math.max(activeCount * 500 + 250, 750);
+    window.setTimeout(() => {
+      if (!autonomousRef.current) return;
+      autonomousReady.current = true;
+      addLog("AUTONOMOUS", "All node lights are out. Demand-based capacity control is active.");
+      dispatchAutonomousWork();
+    }, startDelay);
+    addLog("AUTONOMOUS", "Autonomous mode engaged. Preserving workloads, then powering down sequentially.");
+    setNotice("AUTONOMOUS MODE: draining workloads and waiting for all lights to go out.");
     window.setTimeout(() => setNotice(""), 5200);
     redraw((value) => value + 1);
   }
 
-  return { telemetry, logs, notice, terminateTask, powerCluster, autonomous, setAutonomousMode };
+  return {
+    telemetry,
+    logs,
+    notice,
+    terminateTask,
+    powerCluster,
+    powerAllServers,
+    autonomous,
+    queuedTasks: pendingAutonomousTasks.current.length,
+    setAutonomousMode,
+  };
 }
