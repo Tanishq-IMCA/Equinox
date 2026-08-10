@@ -5,49 +5,23 @@ import { motion } from "framer-motion";
 
 const bars = [34, 52, 46, 68, 55, 78, 63, 48, 72, 59, 82, 66, 88, 74, 91, 68];
 
-function Glitch({ children, className = "" }: { children: string; className?: string }) {
-  const [text, setText] = useState(children);
+function Glitch({ children, className = "" }: { children: React.ReactNode; className?: string }) {
+  const value = String(children);
+  const [text, setText] = useState(value);
   useEffect(() => {
     const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     let frame = 0;
     const timer = window.setInterval(() => {
       frame += 1;
-      setText(children.split("").map((c, i) => (c === " " || i < frame / 2 ? c : chars[Math.floor(Math.random() * chars.length)])).join(""));
-      if (frame > children.length * 2 + 4) {
+      setText(value.split("").map((c, i) => (c === " " || i < frame / 2 ? c : chars[Math.floor(Math.random() * chars.length)])).join(""));
+      if (frame > value.length * 2 + 4) {
         window.clearInterval(timer);
-        setText(children);
+        setText(value);
       }
     }, 38);
     return () => window.clearInterval(timer);
-  }, [children]);
+  }, [value]);
   return <span className={className}>{text}</span>;
-}
-
-function Terminal() {
-  const lines = [
-    ["> awe engine / cluster telemetry", "muted"],
-    ["> nodes online .............. 30", "muted"],
-    ["> workload variance .......... high", "muted"],
-    ["> migration policy ........... loaded", "muted"],
-    ["> power envelope ............. 19.2 kw", "green"],
-    ["> optimization ............... active ✓", "green"],
-  ];
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 28, scale: 0.97 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      transition={{ delay: 0.7, duration: 0.8 }}
-      className="terminal glass"
-    >
-      <div className="window-top"><span className="dot red" /><span className="dot yellow" /><span className="dot green" /><span className="window-label">LIVE / TELEMETRY</span></div>
-      <div className="terminal-body">
-        <div className="terminal-title">CLUSTER CONTROL PLANE <span>● ONLINE</span></div>
-        {lines.map(([line, tone], i) => <div key={line} className={`terminal-line ${tone}`} style={{ animationDelay: `${1 + i * 0.18}s` }}>{line}</div>)}
-        <div className="mini-chart">{bars.map((height, i) => <i key={i} style={{ height: `${height}%`, animationDelay: `${i * 45}ms` }} />)}</div>
-        <div className="terminal-foot"><span>POWER DRAW</span><b>11.84 kW</b><span className="saving">↓ 18.6% OPTIMIZED</span></div>
-      </div>
-    </motion.div>
-  );
 }
 
 export default function Home() {
@@ -55,19 +29,18 @@ export default function Home() {
     <main>
       <div className="wallpaper"><i /><i /><i /><i /><i /></div>
       <header className="header">
-        <a className="logo" href="#"><Glitch>AW<span className="accent">E</span></Glitch></a>
+        <a className="logo" href="#">AW<span className="accent">E</span></a>
         <nav><a href="#system">System</a><a href="#about">About</a><a className="header-cta" href="#system">Explore <span>↗</span></a></nav>
       </header>
 
       <section className="hero">
         <div className="hero-copy">
           <div className="eyebrow"><span className="pulse" /> AUTONOMOUS ENERGY SYSTEMS / 01</div>
-          <h1><Glitch>MAKE COMPUTE</Glitch><Glitch>WORK <span className="accent">SMARTER.</span></Glitch></h1>
+          <h1><Glitch>MAKE COMPUTE</Glitch><Glitch>WORK SMARTER.</Glitch></h1>
           <p className="lede">Real-time intelligence that migrates active workloads, balances thermal load, and powers down idle infrastructure.</p>
           <div className="hero-actions"><a className="button primary" href="#system">See the system <span>→</span></a><a className="button ghost" href="#about">Read the brief <span>↓</span></a></div>
           <div className="hero-note"><span>30 NODES</span><span>·</span><span>8 TASK PROFILES</span><span>·</span><span>ONE OPTIMAL CLUSTER</span></div>
         </div>
-        <Terminal />
       </section>
 
       <section className="ticker"><div><span>REAL-TIME TELEMETRY</span><span>WORKLOAD MIGRATION</span><span>THERMAL AWARENESS</span><span>POWER EFFICIENCY</span><span>REAL-TIME TELEMETRY</span><span>WORKLOAD MIGRATION</span></div></section>
