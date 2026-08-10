@@ -8,7 +8,7 @@ import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 
 const nodes = Array.from({ length: 30 }, (_, i) => ({
   id: i + 1,
-  state: i === 7 || i === 18 ? "warning" : i % 9 === 0 || i === 25 ? "offline" : i % 4 === 0 ? "ready" : "online",
+  state: [8, 21, 27].includes(i + 1) ? "offline" : i === 7 || i === 18 ? "warning" : i % 4 === 0 ? "ready" : "online",
 }));
 
 export default function Dashboard() {
@@ -77,14 +77,16 @@ export default function Dashboard() {
     scene.add(rimLight);
 
     const floor = new THREE.Mesh(
-      new THREE.PlaneGeometry(16, 17),
-      new THREE.MeshStandardMaterial({ color: "#30363b", roughness: 0.82, metalness: 0.12 })
+      new THREE.PlaneGeometry(17, 18),
+      new THREE.MeshStandardMaterial({ color: "#252b30", roughness: 0.86, metalness: 0.12 })
     );
     floor.rotation.x = -Math.PI / 2;
     floor.receiveShadow = true;
     scene.add(floor);
-    const grid = new THREE.GridHelper(16, 16, "#555d63", "#3d454b");
+    const grid = new THREE.GridHelper(17, 34, "#566067", "#40484e");
     grid.position.y = 0.012;
+    grid.material.transparent = true;
+    grid.material.opacity = 0.42;
     scene.add(grid);
 
     let animationFrame = 0;
@@ -97,18 +99,70 @@ export default function Dashboard() {
       const size = bounds.getSize(new THREE.Vector3());
       const center = bounds.getCenter(new THREE.Vector3());
       const scale = 1.9 / Math.max(size.y, 0.001);
+      const rackWidth = size.x * scale;
+      const rackDepth = size.z * scale;
+      const rowGap = 0.85;
+      const statusColors: Record<string, string> = {
+        online: "#36d98b",
+        ready: "#e6b84d",
+        warning: "#ef6262",
+        offline: "#687178",
+      };
+      const makeTopLabel = (node: typeof nodes[number], width: number, depth: number) => {
+        const canvas = document.createElement("canvas");
+        canvas.width = 256;
+        canvas.height = 128;
+        const context = canvas.getContext("2d");
+        if (!context) return null;
+        context.clearRect(0, 0, canvas.width, canvas.height);
+        context.fillStyle = `${statusColors[node.state]}9c`;
+        context.fillRect(7, 7, 242, 114);
+        context.strokeStyle = "rgba(210,220,224,.55)";
+        context.lineWidth = 3;
+        context.strokeRect(8.5, 8.5, 239, 111);
+        context.fillStyle = "rgba(205,213,216,.92)";
+        context.font = "bold 66px Gotham, Arial";
+        context.textAlign = "center";
+        context.textBaseline = "middle";
+        context.fillText(node.state === "offline" ? `X ${node.id}` : `${node.id}`, 128, 66);
+        const texture = new THREE.CanvasTexture(canvas);
+        texture.colorSpace = THREE.SRGBColorSpace;
+        const label = new THREE.Mesh(
+          new THREE.PlaneGeometry(width * 0.58, depth * 0.58),
+          new THREE.MeshBasicMaterial({ map: texture, transparent: true, depthWrite: false, side: THREE.DoubleSide })
+        );
+        label.rotation.x = -Math.PI / 2;
+        return label;
+      };
       for (let index = 0; index < 30; index += 1) {
         const rack = source.clone(true);
         const column = index % 5;
         const row = Math.floor(index / 5);
         rack.scale.setScalar(scale);
-        rack.position.set((column - 2) * 2.55 - center.x * scale, -bounds.min.y * scale, (row - 2.5) * 2.55 - center.z * scale);
+        const node = nodes[index];
+        rack.position.set(
+          (column - 2) * rackWidth - center.x * scale,
+          -bounds.min.y * scale,
+          (row - 2.5) * (rackDepth + rowGap) - center.z * scale
+        );
         rack.traverse((object) => {
           if (object instanceof THREE.Mesh) {
             object.castShadow = true;
             object.receiveShadow = true;
+            if (object.material instanceof THREE.Material) {
+              object.material = object.material.clone();
+              if (node.state === "offline" && "color" in object.material) {
+                (object.material as THREE.MeshStandardMaterial).color.multiplyScalar(0.38);
+                if ("emissive" in object.material) (object.material as THREE.MeshStandardMaterial).emissive.set("#050607");
+              }
+            }
           }
         });
+        const label = makeTopLabel(node, rackWidth, rackDepth);
+        if (label) {
+          label.position.set(rack.position.x, rack.position.y + size.y * scale + 0.006, rack.position.z);
+          scene.add(label);
+        }
         scene.add(rack);
       }
     });
