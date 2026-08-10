@@ -1,6 +1,18 @@
-:root{--accent:#a855f7;--display:"Bourgeois",sans-serif}
-@font-face{font-family:Bourgeois;src:url('/Bourgeois-Book.otf')}
-@font-face{font-family:Pasajero;src:url('/Pasajero.otf')}
+:root{--accent:#a855f7;--display:"Gotham Black",sans-serif;--font-body:"Gotham Light",sans-serif;--mono:"Gotham Light",sans-serif}
+@font-face{font-family:"Gotham Black";src:url('/Gotham Black.otf')}
+@font-face{font-family:"Gotham Light";src:url('/Gotham Light.otf')}
+body{font-family:"Gotham Light",sans-serif}
+h1,h2,h3,.logo,.button,.header-cta{font-family:"Gotham Black",sans-serif}
 .about-photo{width:min(100%,340px);aspect-ratio:1;overflow:hidden;border:1px solid rgba(168,85,247,.35);background:#111}
 .about-photo img{width:100%;height:100%;object-fit:cover;filter:grayscale(1) contrast(1.1);opacity:.8}
 @media(max-width:850px){.about-photo{width:220px}}
+.about-hero{max-width:1280px;margin:auto;padding:170px 5.5vw 110px}
+.about-lede{max-width:650px;color:var(--muted);font-size:17px;line-height:1.8;margin-top:35px}
+.software-brief{display:grid;grid-template-columns:1fr 1fr;gap:10vw;border-top:1px solid rgba(255,255,255,.07)}
+.brief-copy{color:var(--muted);font-size:15px;line-height:1.85}.brief-copy p{margin:0 0 22px}.brief-copy .dim{color:var(--faint);font-size:13px}
+.people>h2{margin-bottom:65px}.people-grid{display:flex;flex-direction:column;gap:24px}
+.person-card{display:grid;grid-template-columns:260px 1fr;min-height:360px;width:100%;overflow:hidden}
+.person-photo{width:190px;height:100%;min-height:365px;object-fit:cover;filter:grayscale(1) contrast(1.1);opacity:.82}
+.person-placeholder{display:grid;place-items:center;background:linear-gradient(145deg,#25103c,#0b1028);color:rgba(168,85,247,.5);font:80px "Gotham Black"}
+.person-info{padding:26px}.person-info .eyebrow{margin-bottom:12px;font-size:9px}.person-info h2{font-size:28px;margin:0 0 20px}.person-bio{color:var(--muted);font-size:12px;line-height:1.75;margin:0 0 20px}.stack{display:flex;flex-wrap:wrap;gap:6px}.stack span{border:1px solid rgba(168,85,247,.25);color:var(--faint);font:9px var(--mono);padding:7px 8px}.pending{color:var(--accent);font:9px var(--mono);line-height:1.6;margin-top:20px}
+@media(max-width:850px){.about-hero{padding:145px 6vw 90px}.software-brief{grid-template-columns:1fr}.person-card{grid-template-columns:120px 1fr}.person-photo{width:120px;min-height:320px}}
