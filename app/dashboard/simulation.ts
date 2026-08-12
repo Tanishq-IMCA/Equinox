@@ -207,6 +207,7 @@ export function useSimulation() {
           pendingAutonomousTasks.current.push(makeTask(pickTemplate(catalog.current), sequence.current++));
           dispatchAutonomousWork();
         }
+        if (!pendingAutonomousTasks.current.length) consolidateAutonomousCapacity();
       }
       if (intakeDue) lastIntakeAt = current;
       redraw((value) => value + 1);
@@ -374,6 +375,21 @@ export function useSimulation() {
         redraw((value) => value + 1);
         return;
       }
+    }
+  }
+
+  function consolidateAutonomousCapacity() {
+    const active = runtime.current.filter((node) => !node.offline && !node.powerAction);
+    if (active.length <= 1) return;
+
+    const target = active.find((node) => node.tasks.length) ?? active[0];
+    for (const source of active) {
+      if (source === target) continue;
+      if (source.tasks.length && canAcceptAll(target, source.tasks)) {
+        moveTasks(source, target);
+        addLog("AUTONOMOUS", `Consolidated node ${source.id} into node ${target.id}; preserving active capacity.`);
+      }
+      if (!source.tasks.length) schedulePowerDown(source, 500);
     }
   }
 
