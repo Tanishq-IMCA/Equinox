@@ -1,0 +1,2 @@
+- [Imported reference build boundary](imported-reference-build.md) — reference apps can fail the root type scan without blocking the runnable Next preview.
+- [Simulation controls](simulation-controls.md) — node power and thermal behavior is intentionally gradual and demand-driven in Autonomous mode.
