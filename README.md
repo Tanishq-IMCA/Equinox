@@ -62,7 +62,7 @@ EQUINOX is an active enterprise prototype: a high-performance, glassmorphic data
 
 These are reference limits for the simulator and apply per node unless noted.
 
-| Metric | Single Node Capacity | 30-Node Cluster Total |
+| Metric | Single Node Capacity | 60-Node Cluster Total |
 | :--- | :--- | :--- |
 | **System Memory (RAM)** | 120 GB | 3,600 GB (3.6 TB) |
 | **GPU Memory (VRAM)** | 60 GB | 1,800 GB (1.8 TB) |
