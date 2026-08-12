@@ -1,4 +1,7 @@
 :root{--accent:#a855f7;--display:"Gotham Black",sans-serif;--font-body:"Gotham Light",sans-serif;--mono:"Gotham Light",sans-serif}
+*{scrollbar-width:none;-ms-overflow-style:none}
+*::-webkit-scrollbar{display:none;width:0;height:0}
+.workflow-page,.overview-page,.dashboard-content,.dashboard-sidebar,.cluster-task-list,.process-list{scrollbar-width:none}
 @font-face{font-family:"Gotham Black";src:url('/Gotham Black.otf')}
 @font-face{font-family:"Gotham Light";src:url('/Gotham Light.otf')}
 body{font-family:"Gotham Light",sans-serif}

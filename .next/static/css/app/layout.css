@@ -2,6 +2,9 @@
   !*** css ./node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[14].oneOf[12].use[2]!./node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[14].oneOf[12].use[3]!./app/overrides.css ***!
   \***************************************************************************************************************************************************************************************************************************************************************/
 :root{--accent:#a855f7;--display:"Gotham Black",sans-serif;--font-body:"Gotham Light",sans-serif;--mono:"Gotham Light",sans-serif}
+*{scrollbar-width:none;-ms-overflow-style:none}
+*::-webkit-scrollbar{display:none;width:0;height:0}
+.workflow-page,.overview-page,.dashboard-content,.dashboard-sidebar,.cluster-task-list,.process-list{scrollbar-width:none}
 @font-face{font-family:"Gotham Black";src:url('/Gotham Black.otf')}
 @font-face{font-family:"Gotham Light";src:url('/Gotham Light.otf')}
 body{font-family:"Gotham Light",sans-serif}
