@@ -1,0 +1,23 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "aHIrShslloCjUo-siZ3mV"
+uri = "file://deliverables/Equinox_Technical_Presentation.pptx"
+type = "slides"
+title = "Equinox Technical Presentation"
+description = "21-slide technical presentation preserving the dark navy, purple, cyan, and green visual system, with judging sections, team credits, API explanation, open-source note, and wow-factor narrative."
+
+[[outputs]]
+id = "YxZziDSTf_W0cC5q18nKJ"
+uri = "file://deliverables/Equinox_Technical_Documentation.md"
+type = "text"
+title = "Equinox Technical Documentation"
+description = "Long-form Markdown architecture and code guide with a fast summary at the start of every section, file-by-file explanations, API details, runtime control loop, team roles, demo script, testing, and roadmap."
+
+[[outputs]]
+id = "6Tuhnr8YuaimabNw6iDVM"
+uri = "file://deliverables/Equinox_Technical_Documentation.docx"
+type = "word_document"
+title = "Equinox Technical Documentation (DOCX)"
+description = "Optional formatted Word export of the same technical documentation for quick sharing or printing."
