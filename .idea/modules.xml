@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/Equinox.iml" filepath="$PROJECT_DIR$/.idea/Equinox.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/repl-nix-workspace.iml" filepath="$PROJECT_DIR$/.idea/repl-nix-workspace.iml" />
     </modules>
   </component>
 </project>
