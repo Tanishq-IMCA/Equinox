@@ -28,7 +28,7 @@ EQUINOX is an active enterprise prototype: a high-performance, glassmorphic data
 
 ## What is implemented
 
-- **30-Node Clustered Data Center Grid:** Interactive 5x6 server matrix visualizing real-time node operational states (Active, High-Load, Migrating, Idle, Offline).
+- **60-Node Clustered Data Center Grid:** Interactive 10x6 server matrix visualizing real-time node operational states (Active, High-Load, Migrating, Idle, Offline).
 - **High-Variance Task Simulation Engine:** Live streaming daemon generating incoming tasks across 8 categorized enterprise profiles with randomized lifetimes and resource profiles.
 - **8-Category Task Library (400 Real-World Logs):** Includes Windows Server OS processes, background daemons, ML training, LLM inference runtimes, cloud gaming, web hosting, disk I/O, and general browsing.
 - **Real-Time Node Telemetry:** Live Task Manager UI per node displaying continuous CPU, RAM (120 GB cap), GPU VRAM (60 GB cap), Power Draw (19.2 kW cap), and Thermal Delta (100°C threshold).
